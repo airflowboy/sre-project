@@ -1,0 +1,47 @@
+# ── Personal learning notes (local only, may contain credentials)
+docs/
+
+# ── Sensitive runtime artifacts (safety net)
+*.kubeconfig
+.kube/
+*.pem
+*.key
+*.crt
+*.p12
+secrets.yaml
+secrets.yml
+*-secret.yaml
+*-secret.yml
+.env
+.env.*
+
+# ── Terraform (Ch 08 + Capstone — state files contain sensitive data)
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# ── Helm (chart/values may have secrets)
+charts/*/secrets/
+*-values-prod.yaml
+
+# ── Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs / Temp
+*.log
+tmp/
+temp/
+
+# ── Claude Code config (project-local)
+.claude/
