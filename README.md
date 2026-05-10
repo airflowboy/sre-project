@@ -4,7 +4,7 @@
 > 직접 설계·구축하는 사이드 프로젝트 (작업 진행 중)
 
 [![Status](https://img.shields.io/badge/status-active%20development-brightgreen)]()
-[![Progress](https://img.shields.io/badge/progress-5%2F10%20chapters-blue)]()
+[![Progress](https://img.shields.io/badge/progress-6%2F10%20chapters-blue)]()
 [![Type](https://img.shields.io/badge/type-self--directed%20learning-orange)]()
 [![Domain](https://img.shields.io/badge/domain-DevOps%20%2F%20SRE-purple)]()
 
@@ -53,7 +53,7 @@ flowchart TD
 | 03 | **Kubernetes 클러스터** | kubeadm + Calico CNI, 3 노드 자체 구축, 첫 워크로드 | ✅ |
 | 04 | **K8s 실용 기능** | ConfigMap/Secret, PV/PVC, Ingress + cert-manager, **자체 Helm chart** | ✅ |
 | 05 | **Ansible IaC** | 구성 관리 자동화, Ch01-04 모든 작업의 playbook화, 새 노드 5분 합류 | ✅ |
-| 06 | Observability | Prometheus + Grafana + Alertmanager, ServiceMonitor, SLO/SLI | 🔜 |
+| 06 | **Observability** | kube-prometheus-stack, ServiceMonitor, PrometheusRule, Inhibit/Silence | ✅ |
 | 07 | CI/CD (GitOps) | GitHub Actions + ArgoCD, Image Updater, 점진 롤아웃 | ⏳ |
 | 08 | Terraform IaC | 인프라 프로비저닝, AWS 프로비저너, Terraform + Ansible 조합 | ⏳ |
 | 09 | K8s 보안 | NetworkPolicy, Pod Security, Trivy 이미지 스캔, RBAC | ⏳ |
@@ -61,7 +61,7 @@ flowchart TD
 
 ---
 
-## 🖥 현재 직접 운영 중 (Ch 05 시점)
+## 🖥 현재 직접 운영 중 (Ch 06 시점)
 
 ```
 VMware Workstation Pro (Host: 24C/64G)
@@ -85,6 +85,21 @@ K8s 1.33.11 / Calico v3.29 / containerd v2.2 / Helm 3.20 / cert-manager v1.16
 - **HTTPS 워크로드** — `nginx.<IP>.nip.io` (cert-manager 자체 CA 발급, 자동 갱신)
 - **PostgreSQL StatefulSet** — local-path-provisioner PVC 위 데이터 영속
 - **ingress-nginx** + **cert-manager** + **Calico** + **local-path-provisioner**
+
+### Observability 스택 (Ch 06 산출)
+```
+monitoring 네임스페이스 — kube-prometheus-stack 풀 컴포넌트
+├─ prometheus-operator   (CRD 컨트롤러)
+├─ prometheus            (시계열 DB, 10Gi PVC, 7d retention)
+├─ alertmanager          (알람 라우팅, 2Gi PVC)
+├─ grafana               (대시보드, 5Gi PVC, 자동 25+ 대시보드)
+├─ kube-state-metrics    (K8s 객체 메트릭)
+└─ node-exporter × 4     (DaemonSet, 노드 메트릭)
+```
+- **HTTPS 노출** — `grafana / prometheus / alertmanager . <IP>.nip.io` (subdomain 분리, 자체 CA)
+- **ServiceMonitor** — ingress-nginx RED 메트릭 자동 수집 (`release: prometheus` 라벨 매칭)
+- **PrometheusRule** — `HighErrorRate` (5xx 발생 시 firing), 의도적 firing 시나리오로 alert lifecycle 검증
+- **Inhibit 룰** — kube-prometheus-stack의 `InfoInhibitor` 메커니즘 발견·이해 (운영 노이즈 자동 억제)
 
 ### Ansible 자동화 (Ch 05 산출)
 ```
@@ -119,6 +134,11 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 ![nginx](https://img.shields.io/badge/nginx-009639?style=flat&logo=nginx&logoColor=white)
 ![SELinux](https://img.shields.io/badge/SELinux-EE0000?style=flat)
 
+### Observability
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
+![Alertmanager](https://img.shields.io/badge/Alertmanager-E6522C?style=flat&logo=prometheus&logoColor=white)
+
 ### 데이터 / 메시지
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis%20(예정)-DC382D?style=flat&logo=redis&logoColor=white)
@@ -127,21 +147,19 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 ### 캡스톤 (예정)
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazonwebservices&logoColor=white)
-![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
-![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
 
 ---
 
 ## 📈 이 Repo의 진화 계획
 
 ```
-[지금]                       [Ch 06-09 진행 중]              [Ch 10 캡스톤 완료]
-README.md                    + configs/ansible              README가 캡스톤 쇼케이스로
-                             + configs/terraform            + app/  (Go 백엔드)
-                             + helm/                         + terraform/  (AWS 인프라)
-                                                             + load-test/  (k6 시나리오)
-                                                             + postmortem/  (장애 분석 문서)
-                                                             + assets/  (대시보드, GIF)
+[지금 — Ch 06 완료]           [Ch 07-09 진행 예정]           [Ch 10 캡스톤 완료]
+README.md                    + .github/workflows/  (CI)     README가 캡스톤 쇼케이스로
+                             + helm/  (자체 chart)           + app/  (Go 백엔드)
+                             + configs/ansible              + terraform/  (AWS 인프라)
+                             + configs/terraform            + load-test/  (k6 시나리오)
+                                                            + postmortem/  (장애 분석 문서)
+                                                            + assets/  (대시보드, GIF)
 ```
 
 → 같은 URL을 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**가 됨.
