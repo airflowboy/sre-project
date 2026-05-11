@@ -4,7 +4,7 @@
 > 직접 설계·구축하는 사이드 프로젝트 (작업 진행 중)
 
 [![Status](https://img.shields.io/badge/status-active%20development-brightgreen)]()
-[![Progress](https://img.shields.io/badge/progress-6%2F10%20chapters-blue)]()
+[![Progress](https://img.shields.io/badge/progress-7%2F10%20chapters-blue)]()
 [![Type](https://img.shields.io/badge/type-self--directed%20learning-orange)]()
 [![Domain](https://img.shields.io/badge/domain-DevOps%20%2F%20SRE-purple)]()
 
@@ -54,14 +54,14 @@ flowchart TD
 | 04 | **K8s 실용 기능** | ConfigMap/Secret, PV/PVC, Ingress + cert-manager, **자체 Helm chart** | ✅ |
 | 05 | **Ansible IaC** | 구성 관리 자동화, Ch01-04 모든 작업의 playbook화, 새 노드 5분 합류 | ✅ |
 | 06 | **Observability** | kube-prometheus-stack, ServiceMonitor, PrometheusRule, Inhibit/Silence | ✅ |
-| 07 | CI/CD (GitOps) | GitHub Actions + ArgoCD, Image Updater, 점진 롤아웃 | ⏳ |
+| 07 | **CI/CD (GitOps)** | GitHub Actions → ghcr.io, ArgoCD auto-sync, Image Updater 풀 루프 | ✅ |
 | 08 | Terraform IaC | 인프라 프로비저닝, AWS 프로비저너, Terraform + Ansible 조합 | ⏳ |
 | 09 | K8s 보안 | NetworkPolicy, Pod Security, Trivy 이미지 스캔, RBAC | ⏳ |
 | 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | ⏳ |
 
 ---
 
-## 🖥 현재 직접 운영 중 (Ch 06 시점)
+## 🖥 현재 직접 운영 중 (Ch 07 시점)
 
 ```
 VMware Workstation Pro (Host: 24C/64G)
@@ -101,6 +101,20 @@ monitoring 네임스페이스 — kube-prometheus-stack 풀 컴포넌트
 - **PrometheusRule** — `HighErrorRate` (5xx 발생 시 firing), 의도적 firing 시나리오로 alert lifecycle 검증
 - **Inhibit 룰** — kube-prometheus-stack의 `InfoInhibitor` 메커니즘 발견·이해 (운영 노이즈 자동 억제)
 
+### CI/CD GitOps 파이프라인 (Ch 07 산출)
+```
+코드 push  →  GitHub Actions (build.yml): Go 앱 빌드 → ghcr.io/airflowboy/sre-project/web-app:sha-<커밋>
+   ↓ (불변 SHA 태그)
+ArgoCD Image Updater (v1.1.1): 새 이미지 감지 → deploy/web-app/.argocd-source 자동 commit (SSH deploy key)
+   ↓
+ArgoCD: 봇 커밋 감지 → auto-sync (prune + selfHeal) → RollingUpdate
+   ↓
+web-app 라이브 (webapp.<IP>.nip.io, HTTPS)        ← 사람이 한 건 git push 1회
+```
+- **CI** — GitHub Actions, multi-stage Dockerfile(distroless), `GITHUB_TOKEN`으로 ghcr 푸시, `paths` 필터로 무한루프 차단
+- **CD** — ArgoCD (Helm 설치, `argocd.<IP>.nip.io` HTTPS), Application `automated: {prune, selfHeal}` — git이 단일 진실 공급원
+- **자동화 검증** — git→배포 / 수동 일탈→self-heal / `git revert`→롤백 / 깨진 이미지→RollingUpdate 무중단 / 코드 변경→Image Updater 풀 루프
+
 ### Ansible 자동화 (Ch 05 산출)
 ```
 새 노드 추가 = inventory 한 줄 추가 + playbook 한 번 실행 (5분)
@@ -122,11 +136,12 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=kubernetes&logoColor=white)
 ![Helm](https://img.shields.io/badge/Helm-0F1689?style=flat&logo=helm&logoColor=white)
 
-### IaC / 자동화
+### IaC / CI-CD / 자동화
 ![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=flat&logo=ansible&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=githubactions&logoColor=white)
+![ArgoCD](https://img.shields.io/badge/Argo%20CD-EF7B4D?style=flat&logo=argo&logoColor=white)
+![Helm](https://img.shields.io/badge/Helm-0F1689?style=flat&logo=helm&logoColor=white)
 ![Terraform](https://img.shields.io/badge/Terraform%20(예정)-844FBA?style=flat&logo=terraform&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions%20(예정)-2088FF?style=flat&logo=githubactions&logoColor=white)
-![ArgoCD](https://img.shields.io/badge/ArgoCD%20(예정)-EF7B4D?style=flat&logo=argo&logoColor=white)
 
 ### 네트워크 / 보안
 ![Calico](https://img.shields.io/badge/Calico-FF6B6B?style=flat)
@@ -153,16 +168,16 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 ## 📈 이 Repo의 진화 계획
 
 ```
-[지금 — Ch 06 완료]           [Ch 07-09 진행 예정]           [Ch 10 캡스톤 완료]
-README.md                    + .github/workflows/  (CI)     README가 캡스톤 쇼케이스로
-                             + helm/  (자체 chart)           + app/  (Go 백엔드)
-                             + configs/ansible              + terraform/  (AWS 인프라)
-                             + configs/terraform            + load-test/  (k6 시나리오)
-                                                            + postmortem/  (장애 분석 문서)
-                                                            + assets/  (대시보드, GIF)
+[지금 — Ch 07 완료]                   [Ch 08-09 진행 예정]        [Ch 10 캡스톤 완료]
+README.md                            + configs/ansible          README가 캡스톤 쇼케이스로
+app/  (Go 미니 서비스)                 + configs/terraform        + app/ 확장 (Go 백엔드)
+.github/workflows/build.yml  (CI)                              + terraform/  (AWS 인프라)
+deploy/web-app/  (Helm chart, ArgoCD)                          + load-test/  (k6 시나리오)
+                                                               + postmortem/  (장애 분석 문서)
+                                                               + assets/  (대시보드, GIF)
 ```
 
-→ 같은 URL을 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**가 됨.
+→ 같은 URL을 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**가 됨 (Image Updater 봇 커밋까지 — GitOps 배포 이력 자동 기록).
 
 ---
 
