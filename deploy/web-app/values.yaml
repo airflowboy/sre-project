@@ -11,7 +11,7 @@ replicaCount: 3
 
 image:
   repository: ghcr.io/airflowboy/sre-project/web-app
-  tag: sha-f8b1a1daff693cab7a3529aae1023cf988bfda06   # immutable: built from commit f8b1a1d
+  tag: sha-0000000000000000000000000000000000000000   # BROKEN (demo 3) — no such image
   pullPolicy: IfNotPresent
 
 service:
