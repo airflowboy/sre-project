@@ -7,7 +7,7 @@
 # see "no change" and never roll out. In Phase D, ArgoCD Image Updater rewrites
 # image.tag here automatically when a newer build appears.
 
-replicaCount: 1
+replicaCount: 3
 
 image:
   repository: ghcr.io/airflowboy/sre-project/web-app
