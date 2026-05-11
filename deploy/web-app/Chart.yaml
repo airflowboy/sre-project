@@ -1,0 +1,8 @@
+apiVersion: v2
+name: web-app
+description: Minimal Go HTTP service, deployed continuously by ArgoCD (Chapter 07 GitOps demo)
+type: application
+# Chart version — bump when the templates change.
+version: 0.1.0
+# App version — informational; the actual running version comes from image.tag.
+appVersion: "v1"

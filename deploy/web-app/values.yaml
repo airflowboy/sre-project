@@ -1,0 +1,32 @@
+# web-app chart values.
+#
+# GitOps note: ArgoCD renders this chart and applies the result. Anything that
+# changes the rendered manifests (replicaCount, image.tag, ...) is what ArgoCD
+# detects. The image.tag MUST be an immutable tag (a git-sha tag), never `latest`
+# — otherwise pushing a new image would not change this file, so ArgoCD would
+# see "no change" and never roll out. In Phase D, ArgoCD Image Updater rewrites
+# image.tag here automatically when a newer build appears.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/airflowboy/sre-project/web-app
+  tag: sha-f8b1a1daff693cab7a3529aae1023cf988bfda06   # immutable: built from commit f8b1a1d
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80          # Service port (cluster-internal)
+  targetPort: 8080  # container port the Go app listens on
+
+ingress:
+  enabled: true
+  className: nginx
+  host: webapp.192.168.223.11.nip.io
+  clusterIssuer: my-ca-issuer   # cert-manager ingress-shim auto-creates the Certificate
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 16Mi
+  limits:
+    memory: 64Mi
