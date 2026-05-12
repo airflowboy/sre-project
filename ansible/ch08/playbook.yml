@@ -1,0 +1,57 @@
+---
+# Ch 08 Phase D — Ansible configures the EC2 that Terraform provisioned.
+#
+# Run it with the instance's public IP as an inline inventory (note the trailing comma —
+# that tells Ansible "this is a host list, not a file"):
+#
+#   cd ansible/ch08
+#   IP=$(cd ../../terraform/ch08 && terraform output -raw instance_public_ip)
+#   ansible-playbook -i "$IP," playbook.yml
+#
+# Terraform = provision (the box). Ansible = configure (what's inside the box).
+
+- name: Configure EC2 base
+  hosts: all
+  gather_facts: false # we gather AFTER confirming the box is reachable
+  become: true
+
+  tasks:
+    - name: Wait for SSH to come up (EC2 may still be booting)
+      ansible.builtin.wait_for_connection:
+        timeout: 120
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: ch08-web
+
+    - name: Set timezone to Asia/Seoul
+      ansible.builtin.command: timedatectl set-timezone Asia/Seoul
+      changed_when: false # timedatectl is effectively idempotent here
+
+    - name: Update all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        update_only: true
+
+    - name: Install a few useful utilities
+      ansible.builtin.dnf:
+        name:
+          - git
+          - tmux
+        state: present
+
+    - name: Drop a marker file proving Ansible ran
+      ansible.builtin.copy:
+        dest: /etc/ch08-configured
+        content: "Configured by Ansible (Ch 08 Phase D) at {{ ansible_date_time.iso8601 }}\n"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Done
+      ansible.builtin.debug:
+        msg: "Configured. Verify: 'hostname' = ch08-web, 'timedatectl' = Asia/Seoul, 'cat /etc/ch08-configured'"
