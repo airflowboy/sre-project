@@ -1,0 +1,13 @@
+# A Role defines a set of permissions, scoped to a single namespace.
+# (Its cluster-wide cousin is ClusterRole.)
+# Here: read-only access to pods and services in demo-sec — nothing else.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: demo-sec
+rules:
+  # apiGroups: "" = the "core" API group (pods, services, configmaps, secrets, ...)
+  - apiGroups: [""]
+    resources: ["pods", "services"]
+    verbs: ["get", "list", "watch"]

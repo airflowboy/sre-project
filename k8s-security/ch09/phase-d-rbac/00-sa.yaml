@@ -1,0 +1,8 @@
+# A ServiceAccount is K8s's way of giving an in-cluster identity to
+# something that isn't a human — a Pod, a controller, an automation script.
+# By itself, a fresh SA has NO permissions; we bind a Role to it below.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: reader
+  namespace: demo-sec
