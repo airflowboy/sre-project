@@ -1,6 +1,6 @@
 # ---- build stage --------------------------------------------------------
 # Full Go toolchain — only used to compile; not shipped in the final image.
-FROM golang:1.23-alpine AS build
+FROM golang:1.25-alpine AS build
 WORKDIR /src
 
 # No third-party deps yet, so copying go.mod alone is enough to cache the
