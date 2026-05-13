@@ -1,0 +1,16 @@
+# Violator #1: privileged container.
+# PSS "baseline" alone rejects this (privileged = host kernel access — clear danger).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-privileged
+  namespace: demo-sec
+  labels:
+    app: bad
+spec:
+  containers:
+    - name: c
+      image: busybox:latest
+      command: ["sh", "-c", "sleep 3600"]
+      securityContext:
+        privileged: true

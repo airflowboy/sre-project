@@ -1,0 +1,32 @@
+# Fully PSS "restricted"-compliant pod.
+#
+# The 4 things restricted demands (over baseline):
+#   1. runAsNonRoot: true                — image's USER must be non-root (or set runAsUser != 0)
+#   2. allowPrivilegeEscalation: false   — no setuid-style escalation in the container
+#   3. capabilities.drop: [ALL]          — drop every Linux capability (then explicitly add what you need)
+#   4. seccompProfile.type: RuntimeDefault — apply the container runtime's default syscall filter
+#
+# (readOnlyRootFilesystem is RECOMMENDED but not required by the restricted profile.)
+#
+# nginxinc/nginx-unprivileged is the official "rootless" nginx — user 101, listens on 8080.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good
+  namespace: demo-sec
+  labels:
+    app: good
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: nginx
+      image: nginxinc/nginx-unprivileged:alpine
+      ports:
+        - containerPort: 8080
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]

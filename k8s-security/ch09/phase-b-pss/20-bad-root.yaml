@@ -1,0 +1,17 @@
+# Violator #2: just plain nginx, no securityContext.
+# nginx:alpine runs as root by default. NO privileged.
+# → baseline ALLOWS this (root is OK under baseline).
+# → restricted REJECTS it (runAsNonRoot, drop ALL caps, seccomp, allowPrivilegeEscalation).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-root
+  namespace: demo-sec
+  labels:
+    app: bad
+spec:
+  containers:
+    - name: c
+      image: nginx:alpine
+      ports:
+        - containerPort: 80
