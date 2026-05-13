@@ -4,5 +4,5 @@ helm:
     value: ghcr.io/airflowboy/sre-project/web-app
     forcestring: true
   - name: image.tag
-    value: sha-ef3c7d7fbf78969393ac605a8d02bcf7e4fc0d28
+    value: sha-8820e397e070b63c3f0cdfe7b70f5c774cd3bdb9
     forcestring: true
