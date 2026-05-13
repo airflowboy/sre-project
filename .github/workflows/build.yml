@@ -51,3 +51,15 @@ jobs:
           build-args: |
             VERSION=v2
             COMMIT=${{ github.sha }}
+
+      # Ch 09-C — fail the build (and so let humans notice) if the image we just
+      # pushed has any known HIGH or CRITICAL fixed CVEs. ignore-unfixed avoids
+      # noise from vulns the upstream hasn't patched yet — pragmatic for now.
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          format: table
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
