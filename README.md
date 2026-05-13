@@ -4,7 +4,7 @@
 > 직접 설계·구축하는 사이드 프로젝트 (작업 진행 중)
 
 [![Status](https://img.shields.io/badge/status-active%20development-brightgreen)]()
-[![Progress](https://img.shields.io/badge/progress-8%2F10%20chapters-blue)]()
+[![Progress](https://img.shields.io/badge/progress-9%2F10%20chapters-blue)]()
 [![Type](https://img.shields.io/badge/type-self--directed%20learning-orange)]()
 [![Domain](https://img.shields.io/badge/domain-DevOps%20%2F%20SRE-purple)]()
 
@@ -56,12 +56,12 @@ flowchart TD
 | 06 | **Observability** | kube-prometheus-stack, ServiceMonitor, PrometheusRule, Inhibit/Silence | ✅ |
 | 07 | **CI/CD (GitOps)** | GitHub Actions → ghcr.io, ArgoCD auto-sync, Image Updater 풀 루프 | ✅ |
 | 08 | **Terraform IaC** | AWS Free Tier에 VPC/EC2/S3 프로비저닝, Terraform + Ansible 조합, `destroy`로 $0 | ✅ |
-| 09 | K8s 보안 | NetworkPolicy, Pod Security, Trivy 이미지 스캔, RBAC | ⏳ |
-| 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | ⏳ |
+| 09 | **K8s 보안** | NetworkPolicy(default-deny+allow), PSS(restricted), **Trivy CI 게이트(실제 CVE 패치)**, RBAC SA | ✅ |
+| 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | ⏳ (다음) |
 
 ---
 
-## 🖥 현재 직접 운영 중 (Ch 08 시점)
+## 🖥 현재 직접 운영 중 (Ch 09 시점)
 
 ```
 VMware Workstation Pro (Host: 24C/64G)
@@ -115,6 +115,18 @@ web-app 라이브 (webapp.<IP>.nip.io, HTTPS)        ← 사람이 한 건 git p
 - **CD** — ArgoCD (Helm 설치, `argocd.<IP>.nip.io` HTTPS), Application `automated: {prune, selfHeal}` — git이 단일 진실 공급원
 - **자동화 검증** — git→배포 / 수동 일탈→self-heal / `git revert`→롤백 / 깨진 이미지→RollingUpdate 무중단 / 코드 변경→Image Updater 풀 루프
 
+### K8s 보안 4층 (Ch 09 산출)
+```
+demo-sec namespace (격리된 데모 ns) — 4층의 "기본 거부, 명시 허용"
+├─ L3/L4  NetworkPolicy   default-deny-ingress + selective allow (Calico dataplane)
+├─ L7     PSS              enforce=restricted (runAsNonRoot/drop ALL caps/seccomp/no-priv-esc)
+├─ 이미지  Trivy CI 게이트    HIGH/CRITICAL CVE 발견 시 build.yml exit 1 → 실제 CVE-2025-68121 잡아서 Go 1.23→1.25 패치
+└─ RBAC   SA + Role + RoleBinding 최소권한 (kubectl auth can-i --as= 매트릭스 검증)
+```
+- **Defense in depth 실제 작동** — NetworkPolicy(L3/L4)와 PSS(L7) 적층, 한 층 뚫려도 다음 층 차단
+- **Trivy가 실제 CVE 검출** — distroless(0) vs nginx:1.20(Total 154) 정량 비교. CI red → 패치 → green → Image Updater → cluster까지 자동
+- **Ch 02 firewalld/SELinux의 K8s 버전** — 같은 철학, 새로운 매트릭스
+
 ### AWS IaC — On-demand (Ch 08 산출)
 ```
 terraform/ch08/   VPC(10.0.0.0/16) + 퍼블릭 서브넷 + IGW + 라우트 + SG + EC2 t2.micro + S3
@@ -158,6 +170,10 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 ![cert-manager](https://img.shields.io/badge/cert--manager-326CE5?style=flat)
 ![nginx](https://img.shields.io/badge/nginx-009639?style=flat&logo=nginx&logoColor=white)
 ![SELinux](https://img.shields.io/badge/SELinux-EE0000?style=flat)
+![Trivy](https://img.shields.io/badge/Trivy-1904DA?style=flat&logo=aquasec&logoColor=white)
+![NetworkPolicy](https://img.shields.io/badge/NetworkPolicy-326CE5?style=flat&logo=kubernetes&logoColor=white)
+![Pod%20Security](https://img.shields.io/badge/Pod%20Security%20Standards-326CE5?style=flat&logo=kubernetes&logoColor=white)
+![RBAC](https://img.shields.io/badge/RBAC-326CE5?style=flat&logo=kubernetes&logoColor=white)
 
 ### Observability
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
@@ -183,16 +199,17 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 ## 📈 이 Repo의 진화 계획
 
 ```
-[지금 — Ch 08 완료]                       [Ch 09 진행 예정]      [Ch 10 캡스톤 완료]
-README.md                                + (보안 manifests:    README가 캡스톤 쇼케이스로
-app/  (Go 미니 서비스)                       NetworkPolicy/      + app/ 확장 (Go 백엔드)
-.github/workflows/build.yml  (CI)            RBAC/PSS/Trivy)    + terraform/ 확장 (AWS 멀티노드)
-deploy/web-app/  (Helm chart, ArgoCD)                          + load-test/  (k6 시나리오)
-terraform/ch08/  (AWS VPC/EC2/S3 IaC)                          + postmortem/  (장애 분석 문서)
-ansible/ch08/  (provision→configure)                           + assets/  (대시보드, GIF)
+[지금 — Ch 09 완료 = 학습 챕터 끝]            [Ch 10 캡스톤 — 본 로드맵의 클라이맥스]
+README.md                                  README가 캡스톤 쇼케이스로
+app/                       Go 미니 서비스   + app/ 확장 (Go 백엔드, Redis Lua, Kafka)
+.github/workflows/build.yml CI + Trivy 게이트  + terraform/ 확장 (멀티 AZ, RDS, ElastiCache, ALB+WAF)
+deploy/web-app/            Helm chart      + load-test/  (k6 — 100만 동시접속 시나리오)
+terraform/ch08/            AWS IaC         + postmortem/  (실전 장애 분석)
+ansible/ch08/              configure       + assets/  (Grafana 대시보드, HPA·Canary GIF)
+k8s-security/ch09/         NetworkPolicy + PSS + RBAC
 ```
 
-→ 같은 URL을 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**가 됨 (Image Updater 봇 커밋 + Terraform 자원 라이프사이클까지).
+→ 같은 URL을 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**가 됨 (Image Updater 봇 커밋 + Terraform 자원 라이프사이클 + Trivy가 실제 잡은 CVE 패치까지).
 
 ---
 
