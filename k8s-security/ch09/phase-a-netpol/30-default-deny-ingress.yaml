@@ -1,0 +1,13 @@
+# Default deny — applies to ALL pods in demo-sec.
+# An empty podSelector ({}) means "every pod in this namespace".
+# No `ingress:` rules below = "no traffic is allowed in".
+# (This blocks the curl → web connection that worked before.)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: demo-sec
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress

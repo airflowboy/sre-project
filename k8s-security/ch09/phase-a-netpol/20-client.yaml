@@ -1,0 +1,14 @@
+# The "client" side — a curl container kept alive with a sleep loop
+# so we can `kubectl exec` into it and run curl on demand.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client
+  namespace: demo-sec
+  labels:
+    app: client
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:latest
+      command: ["sh", "-c", "while true; do sleep 30; done"]

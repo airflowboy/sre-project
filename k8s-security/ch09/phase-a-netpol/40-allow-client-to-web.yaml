@@ -1,0 +1,24 @@
+# Selectively allow client → web on TCP/80.
+# NetworkPolicies are ADDITIVE: this policy + the default-deny above
+# together mean "all ingress denied, except what's explicitly allowed here".
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-client-to-web
+  namespace: demo-sec
+spec:
+  # Apply this policy to pods labeled app=web (the nginx)
+  podSelector:
+    matchLabels:
+      app: web
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        # Allow only from pods labeled app=client (in the SAME namespace)
+        - podSelector:
+            matchLabels:
+              app: client
+      ports:
+        - protocol: TCP
+          port: 80

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-sec
+  labels:
+    # label so other resources can target this ns by name=
+    name: demo-sec
