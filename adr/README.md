@@ -12,6 +12,9 @@
 | [002](ADR-002-backend-language-go.md) | 백엔드 언어 = Go | Ch10 마스터 | ✅ Accepted |
 | [003](ADR-003-nat-gateway-count.md) | NAT Gateway 수 = 단일 (학습용) | Ch10 Phase A | ✅ Accepted |
 | [004](ADR-004-vpc-structure.md) | VPC 구조 = 2-AZ × (public + private) | Ch10 Phase A | ✅ Accepted |
+| [005](ADR-005-node-group-type.md) | 노드 그룹 = Managed Node Group | Ch10 Phase B | ✅ Accepted |
+| [006](ADR-006-eks-addons-management.md) | EKS Add-ons = AWS-managed | Ch10 Phase B | ✅ Accepted |
+| [007](ADR-007-irsa-oidc-timing.md) | IRSA OIDC = Phase B에 미리 셋업 | Ch10 Phase B | ✅ Accepted |
 
 ## 작성 원칙
 - **각 Phase 시작 시 그 Phase의 ADR을 먼저 작성** (코드 전).

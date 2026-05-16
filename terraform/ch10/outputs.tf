@@ -1,3 +1,5 @@
+# --- Phase A: network ---
+
 output "vpc_id" {
   description = "ID of the VPC"
   value       = aws_vpc.main.id
@@ -26,7 +28,36 @@ output "azs_used" {
   value = var.azs
 }
 
-output "cluster_name" {
-  description = "EKS cluster name (already baked into subnet tags, used by Phase B)"
-  value       = var.cluster_name
+# --- Phase B: EKS ---
+
+output "eks_cluster_name" {
+  value = aws_eks_cluster.main.name
+}
+
+output "eks_cluster_endpoint" {
+  description = "EKS API server endpoint"
+  value       = aws_eks_cluster.main.endpoint
+}
+
+output "eks_cluster_version" {
+  value = aws_eks_cluster.main.version
+}
+
+output "eks_oidc_provider_arn" {
+  description = "OIDC provider ARN — referenced by IRSA roles in Phase D"
+  value       = aws_iam_openid_connect_provider.eks.arn
+}
+
+output "eks_oidc_issuer" {
+  description = "OIDC issuer URL — used in IRSA trust policy conditions"
+  value       = aws_eks_cluster.main.identity[0].oidc[0].issuer
+}
+
+output "node_group_arn" {
+  value = aws_eks_node_group.main.arn
+}
+
+output "kubeconfig_command" {
+  description = "Run this once after apply to wire up kubectl"
+  value       = "aws eks update-kubeconfig --name ${aws_eks_cluster.main.name} --region ${var.region}"
 }

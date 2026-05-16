@@ -45,3 +45,39 @@ variable "single_nat_gateway" {
   type        = bool
   default     = true
 }
+
+# --- Phase B: EKS ---
+
+variable "kubernetes_version" {
+  description = "EKS Kubernetes minor version"
+  type        = string
+  default     = "1.31"
+}
+
+# t3.small = 2GB, ~$0.026/hr. Tight but fine for Phase B-D learning.
+# Bump to t3.medium for Phase J load test (or use a separate Spot node group).
+variable "node_instance_types" {
+  type    = list(string)
+  default = ["t3.small"]
+}
+
+variable "node_capacity_type" {
+  description = "ON_DEMAND (stable) or SPOT (60-90% cheaper, can be reclaimed)"
+  type        = string
+  default     = "ON_DEMAND"
+}
+
+variable "node_desired_size" {
+  type    = number
+  default = 2
+}
+
+variable "node_min_size" {
+  type    = number
+  default = 1
+}
+
+variable "node_max_size" {
+  type    = number
+  default = 4
+}
