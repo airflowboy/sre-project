@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and adjust if needed (terraform.tfvars is gitignored).
+# Defaults in variables.tf are designed for the capstone — usually no override needed.
+
+region              = "ap-northeast-2"
+name_prefix         = "sre-roadmap"
+cluster_name        = "sre-roadmap-ch10"
+vpc_cidr            = "10.0.0.0/16"
+single_nat_gateway  = true   # see ADR-003 — flip to false for HA per-AZ NAT
