@@ -213,6 +213,24 @@ k8s-security/ch09/         NetworkPolicy + PSS + RBAC
 
 ---
 
+## 📚 네트워크 기초 학습 자료 (참조용)
+
+DevOps/SRE 관점에서 네트워크가 흐릿할 때마다 돌아와 보는 가이드. **"아파트 단지" 단일 비유**로 VPC·서브넷·IP·포트·NAT·LB·K8s 네트워킹을 꿰뚫음.
+
+→ **[`network-basics/`](network-basics/)** — README 한 페이지부터 시작, 6개 토픽 파일로 깊이.
+
+| 파일 | 언제 보기 |
+|------|----------|
+| [README](network-basics/README.md) | 큰 그림 + 비유 매핑 표 + 자가 진단 5문제 |
+| [01-basics](network-basics/01-basics.md) | IP·CIDR·포트·DNS·OSI |
+| [02-routing-and-nat](network-basics/02-routing-and-nat.md) | 라우팅 테이블, IGW vs NAT GW |
+| [03-firewalls](network-basics/03-firewalls.md) | SG · NACL · 호스트 방화벽 |
+| [04-load-balancers](network-basics/04-load-balancers.md) | L4 vs L7, ALB vs NLB |
+| [05-aws-vpc](network-basics/05-aws-vpc.md) | VPC 구조 (Ch 08·10 직결) |
+| [06-kubernetes](network-basics/06-kubernetes.md) | Pod IP · Service · Ingress · NetworkPolicy · CNI |
+
+---
+
 ## 📝 학습 철학
 
 - **직접 손으로 만들고, 매 단계 "왜 그런지" 원리까지 이해** — 튜토리얼 따라하기 X
