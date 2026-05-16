@@ -15,6 +15,9 @@
 | [005](ADR-005-node-group-type.md) | 노드 그룹 = Managed Node Group | Ch10 Phase B | ✅ Accepted |
 | [006](ADR-006-eks-addons-management.md) | EKS Add-ons = AWS-managed | Ch10 Phase B | ✅ Accepted |
 | [007](ADR-007-irsa-oidc-timing.md) | IRSA OIDC = Phase B에 미리 셋업 | Ch10 Phase B | ✅ Accepted |
+| [008](ADR-008-atomic-counter-redis-lua.md) | 원자적 재고 차감 = Redis Lua 스크립트 | Ch10 Phase C | ✅ Accepted |
+| [009](ADR-009-go-http-stdlib.md) | Go HTTP 프레임워크 = net/http (stdlib) | Ch10 Phase C | ✅ Accepted |
+| [010](ADR-010-idempotency-key-redis.md) | Idempotency Key 저장소 = Redis with TTL | Ch10 Phase C | ✅ Accepted |
 
 ## 작성 원칙
 - **각 Phase 시작 시 그 Phase의 ADR을 먼저 작성** (코드 전).
