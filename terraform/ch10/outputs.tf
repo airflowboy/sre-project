@@ -96,3 +96,20 @@ output "issue_api_role_service_account" {
   description = "K8s SA that may assume the role"
   value       = "${var.app_namespace}/${var.app_service_account}"
 }
+
+# --- Phase D-2: CI / Ingress ---
+
+output "ecr_repository_url" {
+  description = "ECR repo URL — push images here"
+  value       = aws_ecr_repository.issue_api.repository_url
+}
+
+output "github_actions_role_arn" {
+  description = "IAM role for GitHub Actions OIDC — paste into workflow as role-to-assume"
+  value       = aws_iam_role.github_actions.arn
+}
+
+output "alb_controller_role_arn" {
+  description = "IRSA role ARN for aws-load-balancer-controller SA (kube-system)"
+  value       = aws_iam_role.alb_controller.arn
+}

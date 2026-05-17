@@ -1,0 +1,50 @@
+# Defaults assume the Ch10 Phase D-1/D-2 Terraform stack is applied.
+# Override `image.tag`, `redis.addr`, and the IRSA / secret ARNs per environment.
+
+replicaCount: 2
+
+image:
+  repository: 675369196126.dkr.ecr.ap-northeast-2.amazonaws.com/sre-roadmap-ch10/issue-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# IRSA - Pod's ServiceAccount gets eks.amazonaws.com/role-arn annotation,
+# which lets it assume the IAM role provisioned by terraform/ch10/iam_app.tf.
+serviceAccount:
+  name: issue-api
+  roleArn: ""  # set on install: --set serviceAccount.roleArn=$(terraform output -raw issue_api_role_arn)
+
+# App config injected as env vars. REDIS_ADDR is the ElastiCache primary
+# endpoint (Phase D-1 output redis_endpoint). SECRET_DB_PASSWORD_ARN enables
+# the /aws-check endpoint that exercises IRSA against Secrets Manager.
+env:
+  redisAddr: ""                # set on install: --set env.redisAddr=$(terraform output -raw redis_endpoint)
+  eventId: "summer-shoes-2026"
+  secretDbPasswordArn: ""      # --set env.secretDbPasswordArn=$(terraform output -raw secret_db_password_arn)
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+# HPA - scale on CPU. With requests=50m, 70% target == ~35m. Easy to trip
+# with a quick `hey` run from outside the cluster.
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+ingress:
+  enabled: true
+  className: alb
+  # The ALB Controller creates a real ALB from these annotations. ip target
+  # type means the ALB talks to Pod IPs directly (kube-proxy bypassed).
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz

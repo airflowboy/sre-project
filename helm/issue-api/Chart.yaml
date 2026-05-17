@@ -1,0 +1,6 @@
+apiVersion: v2
+name: issue-api
+description: Limited-edition issuance API - atomic stock decrement via Redis Lua, IRSA-backed Secrets Manager access (Ch10 Phase D-2).
+type: application
+version: 0.1.0
+appVersion: "v1"

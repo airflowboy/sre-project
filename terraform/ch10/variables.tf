@@ -130,3 +130,16 @@ variable "app_service_account" {
   type    = string
   default = "issue-api"
 }
+
+# --- Phase D-2: CI / Ingress ---
+
+# ADR-015 — GitHub OIDC trust 조건에 박는 repo 식별자.
+variable "github_owner" {
+  type    = string
+  default = "airflowboy"
+}
+
+variable "github_repo" {
+  type    = string
+  default = "sre-project"
+}

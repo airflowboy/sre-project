@@ -20,7 +20,9 @@
 | [010](ADR-010-idempotency-key-redis.md) | Idempotency Key 저장소 = Redis with TTL | Ch10 Phase C | ✅ Accepted |
 | [011](ADR-011-rdbms-rds-postgres.md) | 영속 발급 기록 DB = RDS PostgreSQL (단일 AZ) | Ch10 Phase D | ✅ Accepted |
 | [012](ADR-012-managed-kv-elasticache.md) | 매니지드 KV = ElastiCache Redis (단일 노드) | Ch10 Phase D | ✅ Accepted |
+| [013](ADR-013-ingress-alb-controller.md) | 외부 노출 Ingress = AWS Load Balancer Controller (ALB) | Ch10 Phase D-2 | ✅ Accepted |
 | [014](ADR-014-secrets-irsa-direct-sdk.md) | Secrets 동기화 = IRSA + AWS SDK Direct (학습용) | Ch10 Phase D | ✅ Accepted |
+| [015](ADR-015-image-registry-ecr-oidc.md) | 이미지 레지스트리 = ECR + GitHub OIDC | Ch10 Phase D-2 | ✅ Accepted |
 
 ## 작성 원칙
 - **각 Phase 시작 시 그 Phase의 ADR을 먼저 작성** (코드 전).

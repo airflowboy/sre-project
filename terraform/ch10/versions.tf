@@ -16,5 +16,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.6"
     }
+    # Phase D-2: ALB Controller IAM 정책 JSON을 업스트림 release에서 가져옴
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.0"
+    }
   }
 }

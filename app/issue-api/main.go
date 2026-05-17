@@ -33,6 +33,7 @@ func main() {
 	addr := getenv("ADDR", ":8080")
 	redisAddr := getenv("REDIS_ADDR", "localhost:6379")
 	eventID := getenv("EVENT_ID", "summer-shoes-2026")
+	secretARN := os.Getenv("SECRET_DB_PASSWORD_ARN") // optional; enables /aws-check
 
 	store, err := newRedisStore(redisAddr)
 	if err != nil {
@@ -47,6 +48,15 @@ func main() {
 	mux.HandleFunc("GET /healthz", h.healthz)
 	mux.HandleFunc("GET /version", h.handleVersion)
 	mux.HandleFunc("GET /stock", h.stock)
+
+	if secretARN != "" {
+		checker, err := newAWSChecker(context.Background(), secretARN)
+		if err != nil {
+			log.Fatalf("aws check init: %v", err)
+		}
+		mux.HandleFunc("GET /aws-check", checker.handle)
+		log.Printf("aws-check enabled for secret %s", secretARN)
+	}
 
 	server := &http.Server{
 		Addr:              addr,

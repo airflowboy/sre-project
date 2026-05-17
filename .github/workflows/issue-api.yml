@@ -1,0 +1,52 @@
+name: issue-api-build-push
+
+# Build and push the limited-edition issuance API image to ECR.
+# Auth uses GitHub OIDC (ADR-015) - no AWS access keys live in repo secrets.
+# Role and repo URL are deterministic once Terraform has applied (see
+# terraform/ch10/github_oidc.tf + ecr.tf); their values are pinned here so
+# the workflow is self-contained.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/issue-api/**'
+      - '.github/workflows/issue-api.yml'
+  workflow_dispatch: {}
+
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ACCOUNT_ID: '675369196126'
+  ROLE_TO_ASSUME: arn:aws:iam::675369196126:role/sre-roadmap-ch10-github-actions
+  ECR_REPO: sre-roadmap-ch10/issue-api
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required to mint the OIDC token
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app/issue-api
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:sha-${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:latest
+          build-args: |
+            VERSION=v1
+            COMMIT=${{ github.sha }}
