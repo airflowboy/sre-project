@@ -36,8 +36,5 @@
 - AZ당 NAT: $0.045 × 2 × 3h = **$0.27**
 - 차이 ~$0.13/세션. 매 세션 destroy로 누적은 비슷하지만, 학습 환경 SPOF 허용 + 코드 단순성 우선.
 
-## 면접 답
-"학습 환경이라 단일 NAT로 비용 ↓ + 코드 단순화 했습니다. 운영이면 AZ당 ×2 + S3·ECR·Secrets Manager는 VPC Endpoint(무료)로 NAT 트래픽 자체를 줄여 비용과 가용성 둘 다 잡습니다. 변수 하나로 전환 가능하게 설계했습니다."
-
 ## 검토 일정
 Phase J(부하 테스트) 직전 — 부하 테스트 트래픽이 NAT를 통과한다면 LCU/데이터 비용 검토. Phase E(Kafka)·F(ML) 도입 시 outbound 트래픽이 늘면 VPC Endpoint 도입 고려.

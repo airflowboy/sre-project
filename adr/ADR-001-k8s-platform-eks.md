@@ -31,8 +31,5 @@
 - Control plane 내부에 접근 불가 → chaos engineering은 worker 죽이기만 가능
 - EKS API 일부 매니지드 잠금-in (K8s 표준 API는 호환되어 다른 매니지드 이전 가능)
 
-## 면접 답
-"Ch 03에서 kubeadm 자체구축해서 control plane 동작 원리 이해했고, 캡스톤은 실무 표준에 맞춰 EKS로 선택했습니다. IRSA 같은 AWS 통합 학습이 우선이었고, 두 방식을 직접 비교한 게 차별화 포인트입니다."
-
 ## 검토 일정
 캡스톤 Phase J(부하 테스트) 후 — 운영 경험을 토대로 "다음 프로젝트라면 EKS Fargate? 또는 ROSA?" 같은 재평가 가능.

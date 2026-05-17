@@ -91,8 +91,5 @@ func fetchSecret(ctx context.Context, name string) (string, error) {
 2. **(나중)** ESO Operator 설치 → AWS Secrets Manager → K8s Secret 자동 동기화 → Pod은 K8s Secret만 봄
 3. **결과**: Pod 코드에서 AWS SDK 제거 → 클라우드 중립 + 회전 자동
 
-## 면접 답
-"학습 목적으로 IRSA + AWS SDK Direct — Pod이 자기 IAM 신원으로 Secrets Manager 직접 호출. ServiceAccount annotation → projected SA token → STS AssumeRoleWithWebIdentity → 임시 자격증명. 운영 표준은 External Secrets Operator로 K8s Secret 자동 동기화 + 회전 자동화. 직접 패턴 → ESO 마이그레이션이 자연스러운 진화."
-
 ## 검토 일정
 Phase D-2 끝나고 — 실제 issue-api Pod이 IRSA로 secrets 받는 거 작동 확인 후, ESO 도입 시기 검토 (또는 캡스톤 후 별도 챕터).

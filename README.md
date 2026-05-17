@@ -235,11 +235,11 @@ ansible/ch08/            (Ch 08 configure)  + .github/workflows/issue-api.yml  (
 k8s-security/ch09/       (Ch 09 보안)
 ```
 
-→ 같은 URL 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**:
+→ 같은 URL 유지하며 점진 진화. commit history에 다음이 박제됨:
 - Image Updater 봇 커밋 (Ch 07 — git이 단일 진실)
 - Terraform 자원 라이프사이클 (Ch 08·10 — apply/destroy 반복)
 - Trivy CI red → Go 1.23→1.25 패치 → green (Ch 09 — 실제 CVE 차단)
-- ADR 박제 (Ch 10 — 15개 결정 기록, "왜 X를 골랐나" 면접 답)
+- ADR 박제 (Ch 10 — 15개 결정 기록, 트레이드오프와 *왜 이 결정인가*가 한 장)
 - Phase D-2의 OIDC 정공법 push (정적 AccessKey 없이 ECR push)
 
 ---
@@ -273,10 +273,4 @@ DevOps/SRE 관점에서 네트워크가 흐릿할 때마다 돌아와 보는 가
 
 ## 🤝 Contact
 
-본 프로젝트는 사이드 학습 프로젝트입니다. 의견·질문 환영.
-
-<!-- 본인 정보 추가하실 곳:
-- Email: 
-- LinkedIn: 
-- 다른 GitHub repo: 
--->
+의견·질문·이슈는 GitHub Issues 또는 PR로.

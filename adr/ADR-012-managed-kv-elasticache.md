@@ -65,8 +65,5 @@ Phase C에서 코드는 *Redis Lua*에 의존. 실제 운영에선 그 Redis를 
 | 백업 | 비활성 | RDB 스냅샷 일별 |
 | Maintenance window | 자동 | 명시 (트래픽 적은 시간) |
 
-## 면접 답
-"ElastiCache Redis = 매니지드라 운영 부담 0, Redis 정확히 호환되어 코드 수정 X. 학습은 cache.t3.micro Free Tier 단일 노드 — 운영은 Replication Group(Multi-AZ + 자동 페일오버) + AUTH + TLS. MemoryDB는 영속·강일관성이 *Redis 자체*를 진실의 출처로 쓸 때 가치 — 우리는 Kafka·DB가 영속 진실이라 ElastiCache로 충분."
-
 ## 검토 일정
 Phase J(부하 테스트) — Redis 단일 노드가 100만 RPS 견디는지 측정. 노드 죽이기 chaos 시 *어떻게 다운되는지* 관찰 후 Replication Group 도입 검토.

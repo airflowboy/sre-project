@@ -46,9 +46,6 @@
 - **극한 성능**: fiber (fasthttp 기반 — 단 표준 net/http 호환 안 됨)
 - **AWS Lambda**: chi가 가장 호환 좋음
 
-## 면접 답
-"라우트 5개 미만이면 net/http로 충분. Go 1.22의 ServeMux가 메서드 라우팅도 지원 → 외부 프레임워크 의존이 *학습 부담만* 됨. 100+ 라우트가 되면 gin 도입 검토. 지금은 의존성 0 + distroless 최소 이미지 = 보안·cold start 최적화."
-
 ## 작성 패턴 (예시)
 ```go
 mux := http.NewServeMux()

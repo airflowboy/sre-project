@@ -47,8 +47,5 @@
 - /24 = Pod 30~50개로 충분하지만 100+ Pod 시나리오면 CIDR 확장 필요 (variable 변경)
 - DB subnet 별도 분리(6 서브넷)가 운영 정석에 더 가까움 — 학습엔 4 서브넷이 충분
 
-## 면접 답
-"표준 EKS 시작 템플릿 — 2 AZ × (public + private) 4 서브넷. DB는 별도 서브넷 안 만들고 private 공유 + SG로 격리. 비용·복잡도 vs 격리 트레이드오프에서 학습 환경엔 4 서브넷이 적절합니다. 운영이면 6 서브넷 + 3 AZ로 확장하고 RDS 멀티 AZ 활성화합니다."
-
 ## 검토 일정
 Phase D(RDS·ElastiCache 도입) 시 — DB subnet group이 잘 동작하는지 검증 후 재평가.

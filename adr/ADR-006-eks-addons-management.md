@@ -41,8 +41,5 @@ Phase D에서 추가: **aws-ebs-csi-driver** — PV/PVC를 EBS 볼륨으로 (IRS
 
 → Phase B는 매니지드 3종. Helm 설치는 Phase D/G/H에서.
 
-## 면접 답
-"EKS 코어 컴포넌트(CNI, DNS, kube-proxy)는 AWS-managed Add-ons. 업그레이드 호환성을 AWS가 보장하고 IRSA 통합도 매끄러워서. ingress-nginx·ArgoCD·Prometheus 같은 *워크로드 옆 컴포넌트*는 Helm으로 — 운영의 주체가 우리니까."
-
 ## 검토 일정
 Phase I(보안)에서 — NetworkPolicy 도입 시 Calico VPC CNI를 매니지드 add-on으로 갈지 self-managed Helm으로 갈지 재평가.

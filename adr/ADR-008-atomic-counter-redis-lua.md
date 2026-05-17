@@ -74,8 +74,5 @@ return ARGV[2]
 - ACID 트랜잭션이라 영속성 ↑. 단 100만 RPS면 PostgreSQL이 ~수만 RPS에서 lock 경합으로 melt.
 - "재고 차감 = Redis Lua / 영속 기록 = DB (비동기)"가 *현업의 흔한 패턴*.
 
-## 면접 답
-"oversell 0건이 절대 조건. Redis가 single-threaded라 Lua 스크립트 안에서 멱등성 체크 + 재고 차감 + ID 생성을 한 번의 원자 연산으로. < 1ms 지연 + 12만 ops/s 처리. 영속성 약점은 Kafka 비동기 이벤트(Phase E)로 보완 — Redis 죽어도 이벤트 로그가 진실의 출처."
-
 ## 검토 일정
 Phase J(부하 테스트) — Redis가 실제로 100만 RPS 견디는지·노드 1개 죽이면 어떻게 되는지 측정 후 재평가.

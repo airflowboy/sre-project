@@ -1,8 +1,8 @@
 # Architecture Decision Records (ADR)
 
-본 프로젝트의 주요 기술·설계 결정 기록. 각 ADR은 **Context / Options / Decision / Consequences** 4 섹션 (Google SRE 책 + Michael Nygard 형식).
+본 프로젝트의 주요 기술·설계 결정 기록. 각 ADR은 **Context / Options / Decision / Consequences** 4 섹션 (Michael Nygard 형식).
 
-> "왜 X를 골랐어요? 왜 Y가 아니라?" — 면접에서 이 ADR 한 장으로 답.
+> 한 결정 = 한 ADR. *왜 X를 골랐는가*와 *어떤 트레이드오프를 받아들였는가*를 박제.
 
 ## 인덱스
 

@@ -59,8 +59,5 @@ Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 - **Hybrid (Redis + DB)**: 가장 견고. 운영 시 도입 검토 — *학습엔 과함*
 - **메모리 (sync.Map)**: 한 Pod에서만 유효. Pod 여러 개면 same key가 다른 Pod에 가면 중복 처리. ❌
 
-## 면접 답
-"Stripe API 패턴 — `Idempotency-Key` 헤더. Redis의 같은 인스턴스에 24h TTL로 저장 → 재고 차감 Lua 스크립트 안에서 함께 처리(한 round-trip). 영속성 약점은 Kafka 이벤트로 보완 — Redis 죽어도 이벤트 로그가 최종 진실. 운영에선 DB unique 제약을 belt-and-suspenders로 추가 가능."
-
 ## 검토 일정
 Phase E(Kafka) 후 — 발급 이벤트 영속화 추가되면, Redis idempotency가 손상돼도 Kafka 이벤트로 *중복 발견·취소* 가능. 그 시점에 영속성 트레이드오프 재평가.

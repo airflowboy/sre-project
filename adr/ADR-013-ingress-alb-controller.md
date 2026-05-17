@@ -59,8 +59,5 @@ issue-api Pod을 외부에 노출하려면 K8s Ingress controller가 필요. 캡
 | WAF | 없음 (Phase F) | WAF v2 ACL ARN annotation 필수 |
 | Access log | 비활성 | S3 버킷 + Athena 분석 |
 
-## 면접 답
-"캡스톤이 AWS 깊게 가는 컨셉이라 ALB Controller로 결정. target-type=ip로 Pod 직접 라우팅(kube-proxy hop 우회), Phase F WAF는 annotation 하나로 연결. 운영은 ACM TLS + IngressGroup으로 비용·정리 최적화."
-
 ## 검토 일정
 Phase F(WAF) — annotation 한 줄로 WAF가 실제 붙는지 검증.

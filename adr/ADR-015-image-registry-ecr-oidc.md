@@ -74,8 +74,5 @@ repo:<owner>/<repo>:pull_request                 # PR (위험: fork PR도 매칭
 ```
 **fork PR 매칭 금지** — `:ref:refs/heads/main`로 좁혀 fork PR 자동 트리거 차단.
 
-## 면접 답
-"CI에서 AWS push는 정적 키 없이 GitHub OIDC. 토큰 15분짜리 + IAM trust의 sub 조건으로 *내 repo, main 브랜치에서만* 허용. ECR scan on push로 CVE 자동 검사 — Trivy(Ch09 Phase C) 대체 또는 보완."
-
 ## 검토 일정
 Phase G(CI/CD) — 다중 환경(staging/prod) 도입 시 GitHub Environments + 환경별 IAM role 분리 검토.

@@ -32,8 +32,5 @@
 - 에러 핸들링이 verbose (panic 안 쓰고 명시적 error return)
 - 제네릭은 Go 1.18+ (우리 1.25라 무관)
 
-## 면접 답
-"Go는 클라우드 네이티브 워크로드의 사실상 표준어 (K8s/Docker/Terraform 모두 Go로 작성). goroutine으로 동시성 코드가 직관적이고, 단일 정적 바이너리 + distroless = 캡스톤의 부하 처리·보안 요구에 적합합니다."
-
 ## 검토 일정
 Phase C(API 작성) 끝나고 — 실제 작성 경험으로 "다음 마이크로서비스는 Go? Rust로 갈까?" 재평가.

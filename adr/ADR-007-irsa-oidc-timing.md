@@ -64,8 +64,5 @@ data "aws_iam_policy_document" "ebs_csi_assume" {
 
 → Phase B에 OIDC provider가 *이미 있어서* 이 코드가 즉시 동작.
 
-## 면접 답
-"IRSA가 EKS의 가장 큰 가치 중 하나. Pod이 AWS Secrets Manager·S3·DynamoDB를 환경변수의 access key 없이 IAM Role로 직접 접근. OIDC provider는 IAM 자원이라 클러스터와 별개로 만들 수 있는데, 클러스터 만들 때 같이 만들어두면 이후 IAM Role 정의가 매끄러움. EBS CSI add-on이 첫 사용자."
-
 ## 검토 일정
 Phase D 끝나고 — 실제 IRSA 사용 경험을 토대로 *환경변수 access key 시절*과 운영 부담·보안 차이 회고.
