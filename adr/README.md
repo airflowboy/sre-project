@@ -18,6 +18,9 @@
 | [008](ADR-008-atomic-counter-redis-lua.md) | 원자적 재고 차감 = Redis Lua 스크립트 | Ch10 Phase C | ✅ Accepted |
 | [009](ADR-009-go-http-stdlib.md) | Go HTTP 프레임워크 = net/http (stdlib) | Ch10 Phase C | ✅ Accepted |
 | [010](ADR-010-idempotency-key-redis.md) | Idempotency Key 저장소 = Redis with TTL | Ch10 Phase C | ✅ Accepted |
+| [011](ADR-011-rdbms-rds-postgres.md) | 영속 발급 기록 DB = RDS PostgreSQL (단일 AZ) | Ch10 Phase D | ✅ Accepted |
+| [012](ADR-012-managed-kv-elasticache.md) | 매니지드 KV = ElastiCache Redis (단일 노드) | Ch10 Phase D | ✅ Accepted |
+| [014](ADR-014-secrets-irsa-direct-sdk.md) | Secrets 동기화 = IRSA + AWS SDK Direct (학습용) | Ch10 Phase D | ✅ Accepted |
 
 ## 작성 원칙
 - **각 Phase 시작 시 그 Phase의 ADR을 먼저 작성** (코드 전).

@@ -39,7 +39,6 @@ variable "private_subnet_cidrs" {
 }
 
 # ADR-003: single NAT GW for learning (SPOF accepted, cost ↓).
-# Flip to false for one NAT per AZ (HA + 2x cost).
 variable "single_nat_gateway" {
   description = "true = 1 NAT (cheap, SPOF) / false = 1 per AZ (HA, 2x cost). See ADR-003."
   type        = bool
@@ -54,8 +53,6 @@ variable "kubernetes_version" {
   default     = "1.31"
 }
 
-# t3.small = 2GB, ~$0.026/hr. Tight but fine for Phase B-D learning.
-# Bump to t3.medium for Phase J load test (or use a separate Spot node group).
 variable "node_instance_types" {
   type    = list(string)
   default = ["t3.small"]
@@ -80,4 +77,56 @@ variable "node_min_size" {
 variable "node_max_size" {
   type    = number
   default = 4
+}
+
+# --- Phase D: Data layer ---
+
+# ADR-011 — RDS PostgreSQL db.t3.micro (Free Tier 12mo).
+variable "db_instance_class" {
+  type    = string
+  default = "db.t3.micro"
+}
+
+variable "db_engine_version" {
+  type    = string
+  default = "16.10"
+}
+
+variable "db_name" {
+  type    = string
+  default = "issueapi"
+}
+
+variable "db_username" {
+  type    = string
+  default = "issueapi"
+}
+
+variable "db_allocated_storage" {
+  description = "GB. 20 = Free Tier max for gp3."
+  type        = number
+  default     = 20
+}
+
+# ADR-012 — ElastiCache Redis cache.t3.micro (Free Tier 12mo).
+variable "redis_node_type" {
+  type    = string
+  default = "cache.t3.micro"
+}
+
+variable "redis_engine_version" {
+  type    = string
+  default = "7.1"
+}
+
+# Kubernetes ServiceAccount that issue-api will use (Phase D-2).
+# Pre-declared here so IRSA trust policy can lock the role to this exact SA.
+variable "app_namespace" {
+  type    = string
+  default = "default"
+}
+
+variable "app_service_account" {
+  type    = string
+  default = "issue-api"
 }

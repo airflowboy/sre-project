@@ -44,7 +44,7 @@ output "eks_cluster_version" {
 }
 
 output "eks_oidc_provider_arn" {
-  description = "OIDC provider ARN — referenced by IRSA roles in Phase D"
+  description = "OIDC provider ARN — referenced by IRSA roles"
   value       = aws_iam_openid_connect_provider.eks.arn
 }
 
@@ -60,4 +60,39 @@ output "node_group_arn" {
 output "kubeconfig_command" {
   description = "Run this once after apply to wire up kubectl"
   value       = "aws eks update-kubeconfig --name ${aws_eks_cluster.main.name} --region ${var.region}"
+}
+
+# --- Phase D: Data layer ---
+
+output "rds_endpoint" {
+  description = "PostgreSQL endpoint (host:port)"
+  value       = "${aws_db_instance.postgres.address}:${aws_db_instance.postgres.port}"
+}
+
+output "rds_db_name" {
+  value = aws_db_instance.postgres.db_name
+}
+
+output "redis_endpoint" {
+  description = "ElastiCache Redis primary endpoint (single-node cluster)"
+  value       = "${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.port}"
+}
+
+output "secret_db_password_arn" {
+  value = aws_secretsmanager_secret.db_password.arn
+}
+
+output "secret_db_url_arn" {
+  value = aws_secretsmanager_secret.db_url.arn
+}
+
+# IRSA role for issue-api Pod (Phase D-2 ServiceAccount will reference this).
+output "issue_api_role_arn" {
+  description = "IRSA role ARN — set as eks.amazonaws.com/role-arn annotation on the SA"
+  value       = aws_iam_role.issue_api.arn
+}
+
+output "issue_api_role_service_account" {
+  description = "K8s SA that may assume the role"
+  value       = "${var.app_namespace}/${var.app_service_account}"
 }

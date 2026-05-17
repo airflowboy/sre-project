@@ -11,5 +11,10 @@ terraform {
       source  = "hashicorp/tls"
       version = "~> 4.0"
     }
+    # Phase D: random_password로 DB·캐시 비번 생성 → Secrets Manager에 저장
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 }
