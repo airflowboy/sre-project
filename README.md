@@ -4,7 +4,7 @@
 > 직접 설계·구축하는 사이드 프로젝트 (작업 진행 중)
 
 [![Status](https://img.shields.io/badge/status-active%20development-brightgreen)]()
-[![Progress](https://img.shields.io/badge/progress-9%2F10%20chapters-blue)]()
+[![Progress](https://img.shields.io/badge/Ch10%20capstone-Phase%20D%20complete-blue)]()
 [![Type](https://img.shields.io/badge/type-self--directed%20learning-orange)]()
 [![Domain](https://img.shields.io/badge/domain-DevOps%20%2F%20SRE-purple)]()
 
@@ -32,12 +32,12 @@ flowchart TD
     API -.metrics.-> OBS
 ```
 
-### 핵심 도전
-- **동시성·정합성**: oversell 0건 (Redis Lua 원자 연산, Idempotency Key)
-- **트래픽 처리**: 평소 100 RPS → 피크 100만 RPS (가상 대기열, Backpressure, HPA)
-- **봇 차단**: 매크로/스크립트 자동 탐지 + WAF 실시간 피드백
-- **SLO 운영**: p99 지연시간, 가용성, 재고 정합성 지표 정의·추적
-- **Self-monitoring**: 우리 시스템의 이상 신호를 우리 ML이 학습·탐지
+### 핵심 도전 (현재 상태)
+- ✅ **동시성·정합성**: oversell 0건 (Redis Lua 원자 연산, Idempotency Key) — Phase C 단위 100 goroutine vs 재고 5에서 정확히 5 발급 / Phase D-2 클라우드 ALB 뒤에서 idempotent_replay 검증
+- ⏳ **트래픽 처리**: 평소 100 RPS → 피크 100만 RPS (가상 대기열, Backpressure, HPA) — Phase D-2 HPA scale up 2→4 검증, 100만 RPS는 Phase J 부하 테스트
+- ⏳ **봇 차단**: 매크로/스크립트 자동 탐지 + WAF 실시간 피드백 — Phase F (ALB annotation 한 줄로 WAF 연결, 가상 대기열이 1차 필터)
+- ⏳ **SLO 운영**: p99 지연시간, 가용성, 재고 정합성 지표 정의·추적 — Phase H
+- ⏳ **Self-monitoring**: 우리 시스템의 이상 신호를 우리 ML이 학습·탐지 — Phase F·H
 
 ---
 
@@ -57,34 +57,52 @@ flowchart TD
 | 07 | **CI/CD (GitOps)** | GitHub Actions → ghcr.io, ArgoCD auto-sync, Image Updater 풀 루프 | ✅ |
 | 08 | **Terraform IaC** | AWS Free Tier에 VPC/EC2/S3 프로비저닝, Terraform + Ansible 조합, `destroy`로 $0 | ✅ |
 | 09 | **K8s 보안** | NetworkPolicy(default-deny+allow), PSS(restricted), **Trivy CI 게이트(실제 CVE 패치)**, RBAC SA | ✅ |
-| 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | ⏳ (다음) |
+| 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | 🚧 진행 중 |
+
+### Ch 10 캡스톤 Phase 진행 상황 (10 Phase 중 5 완료)
+
+| Phase | 내용 | 산출물 | 상태 |
+|:--:|---|---|:--:|
+| A | 멀티 AZ VPC + NAT + EKS 자동발견 태그 | `terraform/ch10/` + ADR-001~004 | ✅ |
+| B | EKS 클러스터 + Managed Node Group + IRSA OIDC | eks.tf/nodes.tf/iam.tf/addons.tf + ADR-005~007 | ✅ |
+| C | Go issue-api + Redis Lua 원자 재고 (oversell 0건) | `app/issue-api/` + ADR-008~010 | ✅ |
+| D-1 | RDS Postgres + ElastiCache Redis + Secrets Manager + IRSA role | rds.tf/elasticache.tf/secrets.tf/iam_app.tf + ADR-011/012/014 | ✅ |
+| D-2 | ECR + GitHub OIDC + ALB Controller + Helm chart + Pod IRSA 실증 + HPA scale up | ecr.tf/github_oidc.tf/iam_alb_controller.tf + `helm/issue-api/` + `.github/workflows/issue-api.yml` + ADR-013/015 | ✅ |
+| E | 비동기 이벤트 큐 + 가상 대기열 + RDS 본격 활용 | SQS or MSK + 컨슈머 + 대기열 알고리즘 | ⏳ 다음 |
+| F | 봇 탐지 + WAF 피드백 | ALB annotation 한 줄로 WAF 연결 | ⏳ |
+| G | CI/CD 본격 (ArgoCD on EKS, Image Updater 확장) | Ch 07 패턴을 EKS에 이식 | ⏳ |
+| H | Observability + SLO 정의 | Prometheus + Grafana + SLO 알람 | ⏳ |
+| I | WAF + Secrets + NetworkPolicy 통합 보안 | Ch 09 패턴 EKS에 이식 | ⏳ |
+| J | 🔥 부하 100만 + Chaos + Post-mortem | k6 시나리오 + chaos-mesh + 사후분석 | ⏳ |
+
+→ **15개 ADR**(`adr/`)로 각 Phase의 *왜 이 기술인가* 박제. **매 세션 `terraform apply` 5분 스핀업 → 검증 → `destroy` $0 복귀** (on-demand 패턴, FinOps).
 
 ---
 
-## 🖥 현재 직접 운영 중 (Ch 09 시점)
+## 🖥 작업 환경 현황
+
+**Ch 10 시작 시점에 홈랩 K8s를 종료**(`destroy`로 자원 정리) — 캡스톤이 AWS 매니지드 EKS로 자족이라 *홈랩 의존 종료*. Windows에서 직접 Terraform/Helm/kubectl 운영.
 
 ```
-VMware Workstation Pro (Host: 24C/64G)
+Windows 11 Pro (24C/64G)
+├─ Terraform v1.15 (portable)    → terraform/ch10/ 48 자원 apply/destroy
+├─ Helm v3.16 (portable)         → helm/issue-api/ 차트
+├─ kubectl                       → aws eks update-kubeconfig 로 EKS 연결
+├─ AWS CLI v2.17                 → user/terraform IAM (콘솔 접근 X, AccessKey만)
+└─ AWS Budgets $20 임계          → 비용 안전망
 
-┌─────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│ rocky-master    │  │ rocky-worker1    │  │ rocky-worker2    │  │ rocky-worker3    │
-│ .10  4C/8G      │  │ .11  2C/4G       │  │ .12  2C/4G       │  │ .13  2C/4G       │
-│ Control Plane   │  │ Worker           │  │ Worker           │  │ Worker (신규,    │
-│ + etcd          │  │                  │  │                  │  │  Ansible 자동)  │
-└─────────────────┘  └──────────────────┘  └──────────────────┘  └──────────────────┘
-        ↕                  ↕                    ↕                    ↕
-            VMware NAT 192.168.223.0/24
-            Pod CIDR 10.244.0.0/16 (Calico VXLAN)
-            Service CIDR 10.96.0.0/12
-
-K8s 1.33.11 / Calico v3.29 / containerd v2.2 / Helm 3.20 / cert-manager v1.16
+AWS Account 675369196126 (ap-northeast-2)
+└─ 매 세션 apply→검증→destroy ($0 복귀)
 ```
 
-### 운영 중인 워크로드
-- **자체 Helm chart `web-app`** — nginx Deployment + ConfigMap × 2 + Secret + Service + Ingress + Certificate, 통합 패키지
-- **HTTPS 워크로드** — `nginx.<IP>.nip.io` (cert-manager 자체 CA 발급, 자동 갱신)
-- **PostgreSQL StatefulSet** — local-path-provisioner PVC 위 데이터 영속
-- **ingress-nginx** + **cert-manager** + **Calico** + **local-path-provisioner**
+### 홈랩 운영(Ch 01-09) — 종료된 자산
+홈랩 K8s 3노드 클러스터(rocky-master + worker×3, K8s 1.33.11 / Calico VXLAN / kubeadm)에서 Ch 01-09의 모든 학습 진행. `ansible/ch05/` playbook으로 *언제든 5분 내 재구축* 가능 — IaC가 보존하는 환경 재현성. Ch 04(자체 Helm chart), Ch 06(kube-prometheus-stack), Ch 07(ArgoCD GitOps + Image Updater 풀루프), Ch 09(NetworkPolicy + PSS + Trivy + RBAC 4층 보안) 모두 실증 완료.
+
+### Ch 10 Phase D-2 검증 결과 (마지막 apply 세션, 2026-05-17)
+- **`/aws-check` → IRSA 실증** — Pod의 SA token이 sts:AssumeRoleWithWebIdentity로 IAM role 받아 Secrets Manager에서 24자 password 길이 확인. 비번 값은 응답에 절대 미노출(`value_length`만)
+- **Redis Lua 멱등성 클라우드 실증** — `POST /issue` 2회(다른 idem key) → 다른 KSUID 발급, stock 100→98. 같은 key 재요청 → **같은 KSUID + status=idempotent_replay**, stock 차감 안 함. ADR-008/010 통과
+- **HPA scale up 실증** — 30 병렬 curl 부하 → +60s: cpu 123%, replicas 2→3 / +120s: cpu 69%(목표 도달), replicas 3→4
+- **GitHub OIDC → ECR push** — `aws-actions/configure-aws-credentials@v4`로 AccessKey 없이 push. trust의 `sub` 조건이 `repo:airflowboy/sre-project:ref:refs/heads/main`로 fork PR 차단
 
 ### Observability 스택 (Ch 06 산출)
 ```
@@ -182,34 +200,47 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 
 ### 데이터 / 메시지
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis%20(예정)-DC382D?style=flat&logo=redis&logoColor=white)
-![Apache Kafka](https://img.shields.io/badge/Kafka%20(예정)-231F20?style=flat&logo=apachekafka&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Kafka%20(Phase%20E)-231F20?style=flat&logo=apachekafka&logoColor=white)
 
-### 클라우드
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazonwebservices&logoColor=white)
-![Amazon EC2](https://img.shields.io/badge/EC2-FF9900?style=flat&logo=amazonec2&logoColor=white)
-![Amazon VPC](https://img.shields.io/badge/VPC-232F3E?style=flat&logo=amazonvpc&logoColor=white)
-![Amazon S3](https://img.shields.io/badge/S3-569A31?style=flat&logo=amazons3&logoColor=white)
-
-### 캡스톤 (예정)
+### 백엔드
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)
+![net/http](https://img.shields.io/badge/net%2Fhttp%20stdlib-00ADD8?style=flat&logo=go&logoColor=white)
+![KSUID](https://img.shields.io/badge/KSUID-00ADD8?style=flat)
+
+### 클라우드 (AWS)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazonwebservices&logoColor=white)
+![Amazon EKS](https://img.shields.io/badge/EKS-FF9900?style=flat&logo=amazoneks&logoColor=white)
+![Amazon RDS](https://img.shields.io/badge/RDS-527FFF?style=flat&logo=amazonrds&logoColor=white)
+![Amazon ElastiCache](https://img.shields.io/badge/ElastiCache-C925D1?style=flat&logo=amazonelasticache&logoColor=white)
+![Amazon ECR](https://img.shields.io/badge/ECR-FF9900?style=flat&logo=amazonecr&logoColor=white)
+![Amazon ALB](https://img.shields.io/badge/ALB-8C4FFF?style=flat&logo=awselasticloadbalancing&logoColor=white)
+![Secrets Manager](https://img.shields.io/badge/Secrets%20Manager-DD344C?style=flat&logo=amazonaws&logoColor=white)
+![IAM IRSA](https://img.shields.io/badge/IAM%20IRSA%20%2B%20OIDC-DD344C?style=flat&logo=amazoniam&logoColor=white)
+![Amazon VPC](https://img.shields.io/badge/VPC-232F3E?style=flat&logo=amazonvpc&logoColor=white)
+![Amazon EC2](https://img.shields.io/badge/EC2-FF9900?style=flat&logo=amazonec2&logoColor=white)
+![Amazon S3](https://img.shields.io/badge/S3-569A31?style=flat&logo=amazons3&logoColor=white)
 
 ---
 
 ## 📈 이 Repo의 진화 계획
 
 ```
-[지금 — Ch 09 완료 = 학습 챕터 끝]            [Ch 10 캡스톤 — 본 로드맵의 클라이맥스]
-README.md                                  README가 캡스톤 쇼케이스로
-app/                       Go 미니 서비스   + app/ 확장 (Go 백엔드, Redis Lua, Kafka)
-.github/workflows/build.yml CI + Trivy 게이트  + terraform/ 확장 (멀티 AZ, RDS, ElastiCache, ALB+WAF)
-deploy/web-app/            Helm chart      + load-test/  (k6 — 100만 동시접속 시나리오)
-terraform/ch08/            AWS IaC         + postmortem/  (실전 장애 분석)
-ansible/ch08/              configure       + assets/  (Grafana 대시보드, HPA·Canary GIF)
-k8s-security/ch09/         NetworkPolicy + PSS + RBAC
+[Ch 01-09 학습 챕터 완료]                  [Ch 10 캡스톤 5/10 Phase 완료]      [남은 Phase E~J]
+app/web-app/             (Ch 07 미니서비스) + app/issue-api/    (Phase C-D)    + load-test/   (Phase J k6)
+.github/workflows/       (Ch 07/09 CI)      + helm/issue-api/   (Phase D-2)    + postmortem/  (Phase J 분석)
+deploy/web-app/          (Ch 07 chart)      + terraform/ch10/   (Phase A-D-2)   + assets/      (HPA GIF 등)
+terraform/ch08/          (Ch 08 AWS IaC)    + adr/              (15 ADR)
+ansible/ch08/            (Ch 08 configure)  + .github/workflows/issue-api.yml  (OIDC→ECR push)
+k8s-security/ch09/       (Ch 09 보안)
 ```
 
-→ 같은 URL을 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**가 됨 (Image Updater 봇 커밋 + Terraform 자원 라이프사이클 + Trivy가 실제 잡은 CVE 패치까지).
+→ 같은 URL 유지하며 점진 진화. **commit history가 학습·구축 여정의 시각 증거**:
+- Image Updater 봇 커밋 (Ch 07 — git이 단일 진실)
+- Terraform 자원 라이프사이클 (Ch 08·10 — apply/destroy 반복)
+- Trivy CI red → Go 1.23→1.25 패치 → green (Ch 09 — 실제 CVE 차단)
+- ADR 박제 (Ch 10 — 15개 결정 기록, "왜 X를 골랐나" 면접 답)
+- Phase D-2의 OIDC 정공법 push (정적 AccessKey 없이 ECR push)
 
 ---
 
