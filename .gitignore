@@ -45,3 +45,4 @@ temp/
 
 # ── Claude Code config (project-local)
 .claude/
+*.exe

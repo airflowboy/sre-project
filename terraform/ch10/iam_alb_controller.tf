@@ -15,7 +15,10 @@ locals {
 # Upstream-maintained policy. Pinning to a release tag means our apply
 # is reproducible; switching versions is a one-line ref change.
 data "http" "alb_controller_policy" {
-  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.8.2/docs/install/iam_policy.json"
+  # NOTE: this version must match (or be newer than) the controller version
+  # the Helm chart installs. v2.8.2 was missing elasticloadbalancing:DescribeListenerAttributes
+  # which the v2.13.x controller calls every reconcile - 403s blocked ALB creation.
+  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.13.4/docs/install/iam_policy.json"
 }
 
 resource "aws_iam_policy" "alb_controller" {
