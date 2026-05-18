@@ -100,8 +100,18 @@ output "issue_api_role_service_account" {
 # --- Phase D-2: CI / Ingress ---
 
 output "ecr_repository_url" {
-  description = "ECR repo URL — push images here"
+  description = "ECR repo URL for issue-api"
   value       = aws_ecr_repository.issue_api.repository_url
+}
+
+output "ecr_consumer_repository_url" {
+  description = "ECR repo URL for issuance-consumer (Phase E-1)"
+  value       = aws_ecr_repository.issuance_consumer.repository_url
+}
+
+output "consumer_role_arn" {
+  description = "IRSA role ARN for issuance-consumer SA (Phase E-1)"
+  value       = aws_iam_role.consumer.arn
 }
 
 output "github_actions_role_arn" {

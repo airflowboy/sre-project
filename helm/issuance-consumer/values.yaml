@@ -1,0 +1,28 @@
+# Consumer has no Service or Ingress - it pulls from Kafka and writes to RDS.
+# All inputs are injected via --set at install time from terraform outputs.
+
+replicaCount: 1  # single broker + single partition consumer for the learning phase
+
+image:
+  repository: 675369196126.dkr.ecr.ap-northeast-2.amazonaws.com/sre-roadmap-ch10/issuance-consumer
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# IRSA - reads SECRET_DB_URL_ARN via the Pod's projected ServiceAccount token.
+serviceAccount:
+  name: issuance-consumer
+  roleArn: ""  # --set serviceAccount.roleArn=$(terraform output -raw consumer_role_arn)
+
+env:
+  kafkaBrokers: ""           # --set env.kafkaBrokers=my-cluster-kafka-bootstrap.kafka:9092
+  kafkaTopic: "issuance.events"
+  consumerGroup: "issuance-consumer"
+  secretDbUrlArn: ""         # --set env.secretDbUrlArn=$(terraform output -raw secret_db_url_arn)
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

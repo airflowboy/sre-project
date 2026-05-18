@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/segmentio/ksuid"
 )
 
 type handler struct {
-	store   *redisStore
-	eventID string
+	store    *redisStore
+	producer *kafkaProducer // may be nil when KAFKA_BROKERS is unset (tests/local)
+	eventID  string
 }
 
 type issueRequest struct {
@@ -73,6 +75,16 @@ func (h *handler) issue(w http.ResponseWriter, r *http.Request) {
 		resp.IssueID = result
 		resp.Status = "issued"
 		w.WriteHeader(http.StatusCreated)
+		// Fire-and-forget the persistence event to Kafka. Failure here does
+		// not affect the user-visible result - Redis is the source of truth
+		// for stock, and the consumer is replayable.
+		h.producer.produceAsync(issuanceEvent{
+			IssueID:        result,
+			EventID:        h.eventID,
+			UserID:         req.UserID,
+			IdempotencyKey: idemKey,
+			IssuedAt:       time.Now().UTC(),
+		})
 	default:
 		// Lua returned a *different* ID than the one we proposed,
 		// which means this Idempotency-Key was previously seen.

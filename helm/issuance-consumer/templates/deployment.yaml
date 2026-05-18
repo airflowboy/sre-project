@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: issuance-consumer
+  labels:
+    app: issuance-consumer
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: issuance-consumer
+  strategy:
+    # Kafka consumer groups rebalance on add/remove; rolling causes minor
+    # rebalance churn but at-least-once + ON CONFLICT DO NOTHING absorbs it.
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: issuance-consumer
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: issuance-consumer
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: KAFKA_BROKERS
+              value: {{ .Values.env.kafkaBrokers | quote }}
+            - name: KAFKA_TOPIC
+              value: {{ .Values.env.kafkaTopic | quote }}
+            - name: CONSUMER_GROUP
+              value: {{ .Values.env.consumerGroup | quote }}
+            - name: SECRET_DB_URL_ARN
+              value: {{ .Values.env.secretDbUrlArn | quote }}
+            - name: AWS_REGION
+              value: ap-northeast-2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

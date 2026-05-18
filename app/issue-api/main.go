@@ -34,6 +34,8 @@ func main() {
 	redisAddr := getenv("REDIS_ADDR", "localhost:6379")
 	eventID := getenv("EVENT_ID", "summer-shoes-2026")
 	secretARN := os.Getenv("SECRET_DB_PASSWORD_ARN") // optional; enables /aws-check
+	kafkaBrokers := os.Getenv("KAFKA_BROKERS")       // empty -> producer disabled
+	kafkaTopic := getenv("KAFKA_TOPIC", "issuance.events")
 
 	store, err := newRedisStore(redisAddr)
 	if err != nil {
@@ -41,7 +43,16 @@ func main() {
 	}
 	defer store.Close()
 
-	h := &handler{store: store, eventID: eventID}
+	producer, err := newKafkaProducer(kafkaBrokers, kafkaTopic)
+	if err != nil {
+		log.Fatalf("kafka producer: %v", err)
+	}
+	defer producer.Close()
+	if producer != nil {
+		log.Printf("kafka producer enabled brokers=%s topic=%s", kafkaBrokers, kafkaTopic)
+	}
+
+	h := &handler{store: store, producer: producer, eventID: eventID}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /issue", h.issue)

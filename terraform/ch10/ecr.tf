@@ -15,3 +15,16 @@ resource "aws_ecr_repository" "issue_api" {
 
   tags = { Name = "${var.cluster_name}-issue-api" }
 }
+
+# Phase E-1 - separate repo for the consumer (ADR-016).
+resource "aws_ecr_repository" "issuance_consumer" {
+  name                 = "${var.cluster_name}/issuance-consumer"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = { Name = "${var.cluster_name}-issuance-consumer" }
+}

@@ -67,7 +67,10 @@ data "aws_iam_policy_document" "ecr_push" {
       "ecr:PutImage",
       "ecr:UploadLayerPart",
     ]
-    resources = [aws_ecr_repository.issue_api.arn]
+    resources = [
+      aws_ecr_repository.issue_api.arn,
+      aws_ecr_repository.issuance_consumer.arn,
+    ]
   }
 }
 
