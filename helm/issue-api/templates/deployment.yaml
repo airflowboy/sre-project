@@ -33,6 +33,12 @@ spec:
             - name: SECRET_DB_PASSWORD_ARN
               value: {{ .Values.env.secretDbPasswordArn | quote }}
             {{- end }}
+            {{- if .Values.env.kafkaBrokers }}
+            - name: KAFKA_BROKERS
+              value: {{ .Values.env.kafkaBrokers | quote }}
+            - name: KAFKA_TOPIC
+              value: {{ .Values.env.kafkaTopic | quote }}
+            {{- end }}
             - name: AWS_REGION
               value: ap-northeast-2
           readinessProbe:

@@ -21,6 +21,8 @@ env:
   redisAddr: ""                # set on install: --set env.redisAddr=$(terraform output -raw redis_endpoint)
   eventId: "summer-shoes-2026"
   secretDbPasswordArn: ""      # --set env.secretDbPasswordArn=$(terraform output -raw secret_db_password_arn)
+  kafkaBrokers: ""             # Phase E-1: --set env.kafkaBrokers=issuance-kafka-bootstrap.kafka.svc.cluster.local:9092
+  kafkaTopic: "issuance.events"
 
 resources:
   requests:

@@ -4,7 +4,7 @@
 > 직접 설계·구축하는 사이드 프로젝트 (작업 진행 중)
 
 [![Status](https://img.shields.io/badge/status-active%20development-brightgreen)]()
-[![Progress](https://img.shields.io/badge/Ch10%20capstone-Phase%20D%20complete-blue)]()
+[![Progress](https://img.shields.io/badge/Ch10%20capstone-Phase%20E--1%20complete-blue)]()
 [![Type](https://img.shields.io/badge/type-self--directed%20learning-orange)]()
 [![Domain](https://img.shields.io/badge/domain-DevOps%20%2F%20SRE-purple)]()
 
@@ -33,7 +33,7 @@ flowchart TD
 ```
 
 ### 핵심 도전 (현재 상태)
-- ✅ **동시성·정합성**: oversell 0건 (Redis Lua 원자 연산, Idempotency Key) — Phase C 단위 100 goroutine vs 재고 5에서 정확히 5 발급 / Phase D-2 클라우드 ALB 뒤에서 idempotent_replay 검증
+- ✅ **동시성·정합성**: oversell 0건 (Redis Lua 원자 연산, Idempotency Key) — Phase C 단위 100 goroutine vs 재고 5에서 정확히 5 발급 / Phase D-2 클라우드 ALB 뒤에서 idempotent_replay 검증 / Phase E-1 비동기 영속화 후 RDS row 정확히 일치 + replay는 Kafka 메시지조차 안 만듦
 - ⏳ **트래픽 처리**: 평소 100 RPS → 피크 100만 RPS (가상 대기열, Backpressure, HPA) — Phase D-2 HPA scale up 2→4 검증, 100만 RPS는 Phase J 부하 테스트
 - ⏳ **봇 차단**: 매크로/스크립트 자동 탐지 + WAF 실시간 피드백 — Phase F (ALB annotation 한 줄로 WAF 연결, 가상 대기열이 1차 필터)
 - ⏳ **SLO 운영**: p99 지연시간, 가용성, 재고 정합성 지표 정의·추적 — Phase H
@@ -59,7 +59,7 @@ flowchart TD
 | 09 | **K8s 보안** | NetworkPolicy(default-deny+allow), PSS(restricted), **Trivy CI 게이트(실제 CVE 패치)**, RBAC SA | ✅ |
 | 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | 🚧 진행 중 |
 
-### Ch 10 캡스톤 Phase 진행 상황 (10 Phase 중 5 완료)
+### Ch 10 캡스톤 Phase 진행 상황 (10 Phase 중 6 완료)
 
 | Phase | 내용 | 산출물 | 상태 |
 |:--:|---|---|:--:|
@@ -68,7 +68,8 @@ flowchart TD
 | C | Go issue-api + Redis Lua 원자 재고 (oversell 0건) | `app/issue-api/` + ADR-008~010 | ✅ |
 | D-1 | RDS Postgres + ElastiCache Redis + Secrets Manager + IRSA role | rds.tf/elasticache.tf/secrets.tf/iam_app.tf + ADR-011/012/014 | ✅ |
 | D-2 | ECR + GitHub OIDC + ALB Controller + Helm chart + Pod IRSA 실증 + HPA scale up | ecr.tf/github_oidc.tf/iam_alb_controller.tf + `helm/issue-api/` + `.github/workflows/issue-api.yml` + ADR-013/015 | ✅ |
-| E | 비동기 이벤트 큐 + 가상 대기열 + RDS 본격 활용 | SQS or MSK + 컨슈머 + 대기열 알고리즘 | ⏳ 다음 |
+| E-1 | Strimzi Kafka + 비동기 영속화 (issue-api producer + consumer → RDS) | k8s-manifests/ch10-kafka.yaml + `app/issuance-consumer/` + `helm/issuance-consumer/` + ADR-016 | ✅ |
+| E-2 | 가상 대기열 (ADR-017) | Redis ZSET 또는 토큰 버킷 | ⏳ 다음 |
 | F | 봇 탐지 + WAF 피드백 | ALB annotation 한 줄로 WAF 연결 | ⏳ |
 | G | CI/CD 본격 (ArgoCD on EKS, Image Updater 확장) | Ch 07 패턴을 EKS에 이식 | ⏳ |
 | H | Observability + SLO 정의 | Prometheus + Grafana + SLO 알람 | ⏳ |
@@ -201,7 +202,8 @@ Ch 01-04의 모든 시스템 설정이 IaC 코드화됨. 멱등성(idempotency) 
 ### 데이터 / 메시지
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
-![Apache Kafka](https://img.shields.io/badge/Kafka%20(Phase%20E)-231F20?style=flat&logo=apachekafka&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?style=flat&logo=apachekafka&logoColor=white)
+![Strimzi](https://img.shields.io/badge/Strimzi-0DB7ED?style=flat)
 
 ### 백엔드
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)
