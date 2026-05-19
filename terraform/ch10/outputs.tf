@@ -123,3 +123,9 @@ output "alb_controller_role_arn" {
   description = "IRSA role ARN for aws-load-balancer-controller SA (kube-system)"
   value       = aws_iam_role.alb_controller.arn
 }
+
+# Phase F-1
+output "waf_acl_arn" {
+  description = "WAF v2 Web ACL ARN — pass to Ingress as alb.ingress.kubernetes.io/wafv2-acl-arn"
+  value       = aws_wafv2_web_acl.main.arn
+}

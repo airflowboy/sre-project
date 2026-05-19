@@ -45,6 +45,9 @@ hpa:
 ingress:
   enabled: true
   className: alb
+  # Phase F-1: pass the WAF ACL ARN to attach AWS WAF v2 to this ALB.
+  # Empty string -> no WAF. ALB Controller calls AssociateWebACL when set.
+  wafAclArn: ""  # --set ingress.wafAclArn=$(terraform output -raw waf_acl_arn)
   # The ALB Controller creates a real ALB from these annotations. ip target
   # type means the ALB talks to Pod IPs directly (kube-proxy bypassed).
   annotations:
