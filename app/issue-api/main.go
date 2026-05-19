@@ -122,3 +122,5 @@ func getenv(key, fallback string) string {
 	}
 	return fallback
 }
+
+// Phase F-1: rebuild trigger after ECR force_delete cycle.
