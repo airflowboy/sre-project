@@ -24,6 +24,7 @@
 | [014](ADR-014-secrets-irsa-direct-sdk.md) | Secrets 동기화 = IRSA + AWS SDK Direct (학습용) | Ch10 Phase D | ✅ Accepted |
 | [015](ADR-015-image-registry-ecr-oidc.md) | 이미지 레지스트리 = ECR + GitHub OIDC | Ch10 Phase D-2 | ✅ Accepted |
 | [016](ADR-016-async-queue-strimzi-kafka.md) | 비동기 이벤트 큐 = Strimzi Kafka on EKS | Ch10 Phase E-1 | ✅ Accepted |
+| [017](ADR-017-virtual-waiting-queue-redis-zset.md) | 가상 대기열 = Redis ZSET + Lua 글로벌 rate cap | Ch10 Phase E-2 | ✅ Accepted |
 
 ## 작성 원칙
 - **각 Phase 시작 시 그 Phase의 ADR을 먼저 작성** (코드 전).

@@ -39,6 +39,10 @@ spec:
             - name: KAFKA_TOPIC
               value: {{ .Values.env.kafkaTopic | quote }}
             {{- end }}
+            - name: QUEUE_ENABLED
+              value: {{ .Values.env.queueEnabled | quote }}
+            - name: QUEUE_ADMISSION_RATE
+              value: {{ .Values.env.queueAdmissionRate | quote }}
             - name: AWS_REGION
               value: ap-northeast-2
           readinessProbe:

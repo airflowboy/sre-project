@@ -23,6 +23,8 @@ env:
   secretDbPasswordArn: ""      # --set env.secretDbPasswordArn=$(terraform output -raw secret_db_password_arn)
   kafkaBrokers: ""             # Phase E-1: --set env.kafkaBrokers=issuance-kafka-bootstrap.kafka.svc.cluster.local:9092
   kafkaTopic: "issuance.events"
+  queueEnabled: "false"        # Phase E-2: --set env.queueEnabled=true to gate /issue behind /queue/join
+  queueAdmissionRate: "5"      # tokens admitted per second across the whole fleet (Lua-enforced)
 
 resources:
   requests:

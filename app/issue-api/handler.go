@@ -12,6 +12,7 @@ import (
 type handler struct {
 	store    *redisStore
 	producer *kafkaProducer // may be nil when KAFKA_BROKERS is unset (tests/local)
+	queue    *queueStore    // may be nil when QUEUE_ENABLED is unset (tests/local)
 	eventID  string
 }
 
@@ -46,6 +47,23 @@ func (h *handler) issue(w http.ResponseWriter, r *http.Request) {
 	if idemKey == "" {
 		http.Error(w, "Idempotency-Key header required", http.StatusBadRequest)
 		return
+	}
+
+	// Phase E-2: virtual waiting queue (ADR-017). The queue is opt-in -
+	// when the queue worker isn't running (h.queue == nil) we keep the
+	// Phase C behavior so unit tests on miniredis don't need a queue.
+	if h.queue != nil {
+		token := r.Header.Get("X-Queue-Token")
+		ok, err := h.queue.hasAdmission(r.Context(), token)
+		if err != nil {
+			log.Printf("queue check error: %v", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+		if !ok {
+			http.Error(w, "queue token required - call POST /queue/join first", http.StatusForbidden)
+			return
+		}
 	}
 
 	var req issueRequest
@@ -103,6 +121,66 @@ func (h *handler) healthz(w http.ResponseWriter, _ *http.Request) {
 func (h *handler) handleVersion(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	_, _ = w.Write([]byte("version=" + version + " commit=" + commit + "\n"))
+}
+
+// POST /queue/join - take a number and step into the waiting line (ADR-017).
+//
+// Responses:
+//
+//	201 Created   - {"token":"<KSUID>", "position":<0-based rank>}
+//	503 Service Unavailable - queue is disabled (QUEUE_ENABLED unset)
+func (h *handler) queueJoin(w http.ResponseWriter, r *http.Request) {
+	if h.queue == nil {
+		http.Error(w, "queue disabled", http.StatusServiceUnavailable)
+		return
+	}
+	token, rank, err := h.queue.join(r.Context())
+	if err != nil {
+		log.Printf("queue join error: %v", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"token":    token,
+		"position": rank,
+		"event_id": h.eventID,
+	})
+}
+
+// GET /queue/status?token=<KSUID>
+//
+//	200 OK        - {"status":"waiting","position":N} | {"status":"admitted"}
+//	404 Not Found - token unknown (never joined or expired)
+//	503           - queue disabled
+func (h *handler) queueStatus(w http.ResponseWriter, r *http.Request) {
+	if h.queue == nil {
+		http.Error(w, "queue disabled", http.StatusServiceUnavailable)
+		return
+	}
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		http.Error(w, "token query param required", http.StatusBadRequest)
+		return
+	}
+	st, rank, err := h.queue.status(r.Context(), token)
+	if err != nil {
+		log.Printf("queue status error: %v", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if st == "unknown" {
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]any{"status": "unknown"})
+		return
+	}
+	resp := map[string]any{"status": st}
+	if st == "waiting" {
+		resp["position"] = rank
+	}
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 func (h *handler) stock(w http.ResponseWriter, r *http.Request) {

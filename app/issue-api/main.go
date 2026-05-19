@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -54,11 +55,24 @@ func main() {
 
 	h := &handler{store: store, producer: producer, eventID: eventID}
 
+	// Phase E-2: virtual waiting queue (ADR-017). Activated by env so unit
+	// tests and bare local runs skip the queue and the worker.
+	queueEnabled := os.Getenv("QUEUE_ENABLED") == "true"
+	admissionRate, _ := strconv.Atoi(getenv("QUEUE_ADMISSION_RATE", "5"))
+	if queueEnabled {
+		h.queue = newQueueStore(store.client, eventID)
+		log.Printf("queue enabled rate=%d/s event=%s", admissionRate, eventID)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /issue", h.issue)
 	mux.HandleFunc("GET /healthz", h.healthz)
 	mux.HandleFunc("GET /version", h.handleVersion)
 	mux.HandleFunc("GET /stock", h.stock)
+	if queueEnabled {
+		mux.HandleFunc("POST /queue/join", h.queueJoin)
+		mux.HandleFunc("GET /queue/status", h.queueStatus)
+	}
 
 	if secretARN != "" {
 		checker, err := newAWSChecker(context.Background(), secretARN)
@@ -87,6 +101,13 @@ func main() {
 			log.Fatalf("server: %v", err)
 		}
 	}()
+
+	// Phase E-2: every replica runs this loop. The Lua script enforces the
+	// global N/sec cap, so calling it from 1 or 10 replicas yields the same
+	// admission rate. No leader election needed.
+	if queueEnabled && h.queue != nil {
+		go runAdmitLoop(ctx, h.queue, admissionRate)
+	}
 
 	<-ctx.Done()
 	log.Println("shutting down...")
