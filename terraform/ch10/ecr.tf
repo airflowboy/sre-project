@@ -28,3 +28,16 @@ resource "aws_ecr_repository" "issuance_consumer" {
 
   tags = { Name = "${var.cluster_name}-issuance-consumer" }
 }
+
+# Phase F-2 - separate repo for the bot-detector (ADR-019).
+resource "aws_ecr_repository" "bot_detector" {
+  name                 = "${var.cluster_name}/bot-detector"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = { Name = "${var.cluster_name}-bot-detector" }
+}

@@ -37,6 +37,7 @@ func main() {
 	secretARN := os.Getenv("SECRET_DB_PASSWORD_ARN") // optional; enables /aws-check
 	kafkaBrokers := os.Getenv("KAFKA_BROKERS")       // empty -> producer disabled
 	kafkaTopic := getenv("KAFKA_TOPIC", "issuance.events")
+	botTopic := getenv("KAFKA_BOT_TOPIC", "bot.signals")
 
 	store, err := newRedisStore(redisAddr)
 	if err != nil {
@@ -44,13 +45,13 @@ func main() {
 	}
 	defer store.Close()
 
-	producer, err := newKafkaProducer(kafkaBrokers, kafkaTopic)
+	producer, err := newKafkaProducer(kafkaBrokers, kafkaTopic, botTopic)
 	if err != nil {
 		log.Fatalf("kafka producer: %v", err)
 	}
 	defer producer.Close()
 	if producer != nil {
-		log.Printf("kafka producer enabled brokers=%s topic=%s", kafkaBrokers, kafkaTopic)
+		log.Printf("kafka producer enabled brokers=%s issuance=%s bot=%s", kafkaBrokers, kafkaTopic, botTopic)
 	}
 
 	h := &handler{store: store, producer: producer, eventID: eventID}

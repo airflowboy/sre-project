@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bot-detector
+description: Consumes bot-signals from Kafka, heuristically flags abusive IPs, and adds them to an AWS WAF IPSet (Ch10 Phase F-2).
+type: application
+version: 0.1.0
+appVersion: "v1"

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-detector
+  labels:
+    app: bot-detector
+spec:
+  # Single replica - the sliding-window state is in-memory (ADR-019). A
+  # Redis-backed window would be the multi-replica upgrade.
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: bot-detector
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: bot-detector
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: bot-detector
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: KAFKA_BROKERS
+              value: {{ .Values.env.kafkaBrokers | quote }}
+            - name: KAFKA_BOT_TOPIC
+              value: {{ .Values.env.kafkaBotTopic | quote }}
+            - name: CONSUMER_GROUP
+              value: {{ .Values.env.consumerGroup | quote }}
+            - name: WAF_IPSET_NAME
+              value: {{ .Values.env.wafIpSetName | quote }}
+            - name: WAF_IPSET_ID
+              value: {{ .Values.env.wafIpSetId | quote }}
+            - name: WINDOW_SECONDS
+              value: {{ .Values.env.windowSeconds | quote }}
+            - name: BURST_LIMIT
+              value: {{ .Values.env.burstLimit | quote }}
+            - name: SOLDOUT_LIMIT
+              value: {{ .Values.env.soldoutLimit | quote }}
+            - name: AWS_REGION
+              value: ap-northeast-2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

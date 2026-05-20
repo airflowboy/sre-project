@@ -129,3 +129,24 @@ output "waf_acl_arn" {
   description = "WAF v2 Web ACL ARN — pass to Ingress as alb.ingress.kubernetes.io/wafv2-acl-arn"
   value       = aws_wafv2_web_acl.main.arn
 }
+
+# Phase F-2
+output "waf_ipset_name" {
+  description = "Bot blocklist IPSet name — bot-detector env WAF_IPSET_NAME"
+  value       = aws_wafv2_ip_set.bot_blocklist.name
+}
+
+output "waf_ipset_id" {
+  description = "Bot blocklist IPSet ID — bot-detector env WAF_IPSET_ID"
+  value       = aws_wafv2_ip_set.bot_blocklist.id
+}
+
+output "bot_detector_role_arn" {
+  description = "IRSA role ARN for bot-detector SA"
+  value       = aws_iam_role.bot_detector.arn
+}
+
+output "ecr_bot_detector_repository_url" {
+  description = "ECR repo URL for bot-detector"
+  value       = aws_ecr_repository.bot_detector.repository_url
+}

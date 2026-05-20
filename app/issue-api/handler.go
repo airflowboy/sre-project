@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
@@ -61,6 +63,11 @@ func (h *handler) issue(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !ok {
+			// A token-less hammering pattern is itself a bot signal.
+			h.producer.produceBotSignal(botSignal{
+				IP: clientIP(r), UserAgent: r.UserAgent(),
+				Result: "rejected", Timestamp: time.Now().UTC(),
+			})
 			http.Error(w, "queue token required - call POST /queue/join first", http.StatusForbidden)
 			return
 		}
@@ -110,7 +117,32 @@ func (h *handler) issue(w http.ResponseWriter, r *http.Request) {
 		resp.Status = "idempotent_replay"
 		w.WriteHeader(http.StatusOK)
 	}
+
+	// Phase F-2: every /issue outcome is a bot-detection signal (ADR-019).
+	// Keyed by IP downstream; hammering shows up as a burst of these.
+	h.producer.produceBotSignal(botSignal{
+		IP: clientIP(r), UserAgent: r.UserAgent(),
+		Result: resp.Status, Timestamp: time.Now().UTC(),
+	})
+
 	_ = json.NewEncoder(w).Encode(resp)
+}
+
+// clientIP extracts the real caller IP. Behind an ALB the original client is
+// the first entry of X-Forwarded-For ("client, proxy1, proxy2"); RemoteAddr
+// would just be the load balancer.
+func clientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if i := strings.IndexByte(xff, ','); i >= 0 {
+			return strings.TrimSpace(xff[:i])
+		}
+		return strings.TrimSpace(xff)
+	}
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
 }
 
 func (h *handler) healthz(w http.ResponseWriter, _ *http.Request) {

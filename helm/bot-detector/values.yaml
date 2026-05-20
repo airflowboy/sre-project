@@ -1,0 +1,33 @@
+# bot-detector has no Service or Ingress - it pulls from Kafka and calls the
+# AWS WAF API. Single replica: the heuristic window is in-memory (ADR-019).
+
+replicaCount: 1
+
+image:
+  repository: 675369196126.dkr.ecr.ap-northeast-2.amazonaws.com/sre-roadmap-ch10/bot-detector
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# IRSA - reads/updates one WAF IPSet via the Pod's projected SA token.
+serviceAccount:
+  name: bot-detector
+  roleArn: ""  # --set serviceAccount.roleArn=$(terraform output -raw bot_detector_role_arn)
+
+env:
+  kafkaBrokers: ""        # --set env.kafkaBrokers=issuance-kafka-bootstrap.kafka.svc.cluster.local:9092
+  kafkaBotTopic: "bot.signals"
+  consumerGroup: "bot-detector"
+  wafIpSetName: ""        # --set env.wafIpSetName=$(terraform output -raw waf_ipset_name)
+  wafIpSetId: ""          # --set env.wafIpSetId=$(terraform output -raw waf_ipset_id)
+  # Heuristic thresholds (ADR-019). Low on purpose for the smoke test.
+  windowSeconds: "10"
+  burstLimit: "30"
+  soldoutLimit: "15"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

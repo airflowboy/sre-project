@@ -1,0 +1,47 @@
+name: bot-detector-build-push
+
+# Same OIDC pattern as issue-api.yml / issuance-consumer.yml (ADR-015).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/bot-detector/**'
+      - '.github/workflows/bot-detector.yml'
+  workflow_dispatch: {}
+
+env:
+  AWS_REGION: ap-northeast-2
+  ROLE_TO_ASSUME: arn:aws:iam::675369196126:role/sre-roadmap-ch10-github-actions
+  ECR_REPO: sre-roadmap-ch10/bot-detector
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app/bot-detector
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:sha-${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:latest
+          build-args: |
+            VERSION=v1
+            COMMIT=${{ github.sha }}

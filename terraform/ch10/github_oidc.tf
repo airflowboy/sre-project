@@ -70,6 +70,7 @@ data "aws_iam_policy_document" "ecr_push" {
     resources = [
       aws_ecr_repository.issue_api.arn,
       aws_ecr_repository.issuance_consumer.arn,
+      aws_ecr_repository.bot_detector.arn,
     ]
   }
 }

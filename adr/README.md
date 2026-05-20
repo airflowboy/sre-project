@@ -26,6 +26,8 @@
 | [016](ADR-016-async-queue-strimzi-kafka.md) | 비동기 이벤트 큐 = Strimzi Kafka on EKS | Ch10 Phase E-1 | ✅ Accepted |
 | [017](ADR-017-virtual-waiting-queue-redis-zset.md) | 가상 대기열 = Redis ZSET + Lua 글로벌 rate cap | Ch10 Phase E-2 | ✅ Accepted |
 | [018](ADR-018-waf-v2-managed-rules.md) | WAF = AWS WAF v2 REGIONAL + Managed Rules + rate-based | Ch10 Phase F-1 | ✅ Accepted |
+| [019](ADR-019-bot-detection-heuristic.md) | 봇 탐지 = 휴리스틱 + 교체 가능 BotDetector 인터페이스 | Ch10 Phase F-2 | ✅ Accepted |
+| [020](ADR-020-waf-dynamic-block-ipset.md) | WAF 동적 차단 = aws_wafv2_ip_set + SDK 갱신 | Ch10 Phase F-2 | ✅ Accepted |
 
 ## 작성 원칙
 - **각 Phase 시작 시 그 Phase의 ADR을 먼저 작성** (코드 전).

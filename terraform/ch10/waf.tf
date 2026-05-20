@@ -8,13 +8,49 @@
 # carries the wafv2-acl-arn annotation and the controller does the
 # AssociateWebACL call for us.
 
+# Phase F-2 - dynamic bot blocklist (ADR-020).
+# Terraform creates the IPSet empty; the bot-detector Pod owns its contents
+# via UpdateIPSet at runtime, so we ignore_changes on addresses.
+resource "aws_wafv2_ip_set" "bot_blocklist" {
+  name               = "${var.cluster_name}-bot-blocklist"
+  description        = "IPs flagged by the bot-detector (Phase F-2)"
+  scope              = "REGIONAL"
+  ip_address_version = "IPV4"
+  addresses          = []
+
+  lifecycle {
+    ignore_changes = [addresses]
+  }
+
+  tags = { Name = "${var.cluster_name}-bot-blocklist" }
+}
+
 resource "aws_wafv2_web_acl" "main" {
   name        = "${var.cluster_name}-waf"
-  description = "Issue-API ALB protection - managed rules + rate-based"
+  description = "Issue-API ALB protection - managed rules + rate-based + bot blocklist"
   scope       = "REGIONAL"
 
   default_action {
     allow {}
+  }
+
+  # ---- Phase F-2: bot blocklist - priority 0, evaluated before everything ----
+  rule {
+    name     = "BotBlocklist"
+    priority = 0
+    action {
+      block {}
+    }
+    statement {
+      ip_set_reference_statement {
+        arn = aws_wafv2_ip_set.bot_blocklist.arn
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "BotBlocklist"
+      sampled_requests_enabled   = true
+    }
   }
 
   # ---- AWS Managed: OWASP top-10 baseline (CommonRuleSet) ----
