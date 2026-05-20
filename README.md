@@ -4,7 +4,7 @@
 > 직접 설계·구축하는 사이드 프로젝트 (작업 진행 중)
 
 [![Status](https://img.shields.io/badge/status-active%20development-brightgreen)]()
-[![Progress](https://img.shields.io/badge/Ch10%20capstone-Phase%20F%20complete-blue)]()
+[![Progress](https://img.shields.io/badge/Ch10%20capstone-Phase%20G%20complete-blue)]()
 [![Type](https://img.shields.io/badge/type-self--directed%20learning-orange)]()
 [![Domain](https://img.shields.io/badge/domain-DevOps%20%2F%20SRE-purple)]()
 
@@ -59,7 +59,7 @@ flowchart TD
 | 09 | **K8s 보안** | NetworkPolicy(default-deny+allow), PSS(restricted), **Trivy CI 게이트(실제 CVE 패치)**, RBAC SA | ✅ |
 | 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | 🚧 진행 중 |
 
-### Ch 10 캡스톤 Phase 진행 상황 (10 Phase 중 9 완료)
+### Ch 10 캡스톤 Phase 진행 상황 (13 세부 Phase 중 10 완료 — A~G, 남음 H·I·J)
 
 | Phase | 내용 | 산출물 | 상태 |
 |:--:|---|---|:--:|
@@ -72,12 +72,12 @@ flowchart TD
 | E-2 | 가상 대기열 = Redis ZSET 시간순 + Lua 글로벌 rate cap | `app/issue-api/queue.go` + ADR-017 | ✅ |
 | F-1 | AWS WAF v2 + ALB 연결 (Managed Rules + rate-based) | `terraform/ch10/waf.tf` + Helm `ingress.wafAclArn` + ADR-018 | ✅ |
 | F-2 | 휴리스틱 봇 탐지 + WAF 동적 IPSet 갱신 (피드백 루프) | `app/bot-detector/` + `terraform/ch10/iam_bot_detector.tf` + ADR-019/020 | ✅ |
-| G | CI/CD 본격 (ArgoCD on EKS, Image Updater 확장) | Ch 07 패턴을 EKS에 이식 | ⏳ |
+| G | CD = ArgoCD GitOps (수동 helm install 대체, auto-sync + self-heal) | `argocd/` + `scripts/argocd-bootstrap.sh` + ADR-021 | ✅ |
 | H | Observability + SLO 정의 | Prometheus + Grafana + SLO 알람 | ⏳ |
 | I | WAF + Secrets + NetworkPolicy 통합 보안 | Ch 09 패턴 EKS에 이식 | ⏳ |
 | J | 🔥 부하 100만 + Chaos + Post-mortem | k6 시나리오 + chaos-mesh + 사후분석 | ⏳ |
 
-→ **15개 ADR**(`adr/`)로 각 Phase의 *왜 이 기술인가* 박제. **매 세션 `terraform apply` 5분 스핀업 → 검증 → `destroy` $0 복귀** (on-demand 패턴, FinOps).
+→ **21개 ADR**(`adr/`)로 각 Phase의 *왜 이 기술인가* 박제. **매 세션 `terraform apply` 스핀업 → 검증 → `destroy` $0 복귀** (on-demand 패턴, FinOps).
 
 ---
 
