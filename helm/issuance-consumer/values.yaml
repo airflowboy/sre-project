@@ -1,7 +1,7 @@
 # Consumer has no Service or Ingress - it pulls from Kafka and writes to RDS.
 # All inputs are injected via --set at install time from terraform outputs.
 
-replicaCount: 1  # single broker + single partition consumer for the learning phase
+replicaCount: 2  # Phase G: bumped 1->2 to prove ArgoCD auto-syncs a Git change
 
 image:
   repository: 675369196126.dkr.ecr.ap-northeast-2.amazonaws.com/sre-roadmap-ch10/issuance-consumer
