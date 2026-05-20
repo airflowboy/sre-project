@@ -124,4 +124,4 @@ func getenv(key, fallback string) string {
 	return fallback
 }
 
-// Phase F-1: rebuild trigger after ECR force_delete cycle.
+// Phase F-2: rebuild trigger (issue-api CI retry after apply finished).
