@@ -1,0 +1,34 @@
+# ArgoCD Application - bot-detector (Ch10 Phase G, ADR-021).
+# See issue-api.yaml for how __PLACEHOLDER__ values are filled at bootstrap.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bot-detector
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/airflowboy/sre-project.git
+    targetRevision: main
+    path: helm/bot-detector
+    helm:
+      parameters:
+        - name: serviceAccount.roleArn
+          value: __BOT_DETECTOR_ROLE_ARN__
+        - name: env.wafIpSetName
+          value: __WAF_IPSET_NAME__
+        - name: env.wafIpSetId
+          value: __WAF_IPSET_ID__
+        - name: env.kafkaBrokers
+          value: issuance-kafka-bootstrap.kafka.svc.cluster.local:9092
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,14 @@
+# ArgoCD helm install values (Ch10 Phase G, ADR-021).
+#
+# Trimmed for a 2-node t3.small learning cluster:
+#   - dex off          : no SSO, local admin account only
+#   - notifications off: no Slack/email hooks
+#   - applicationset off: 3 apps registered directly, no App-of-Apps
+# This is the bootstrap of the GitOps tool itself - ArgoCD cannot deploy
+# ArgoCD, so it goes in via `helm install` (ADR-021 chicken-and-egg note).
+dex:
+  enabled: false
+notifications:
+  enabled: false
+applicationset:
+  enabled: false

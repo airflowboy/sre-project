@@ -1,0 +1,42 @@
+# ArgoCD Application - issue-api (Ch10 Phase G, ADR-021).
+#
+# ArgoCD watches helm/issue-api on the main branch and keeps the cluster in
+# sync with it. The __PLACEHOLDER__ values are runtime infra bindings (IRSA
+# ARN, endpoints) that terraform apply produces - scripts/argocd-bootstrap.sh
+# fills them in before `kubectl apply`. Everything else here, and all of the
+# helm chart, is real GitOps: edit, push, and ArgoCD syncs it.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: issue-api
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/airflowboy/sre-project.git
+    targetRevision: main
+    path: helm/issue-api
+    helm:
+      parameters:
+        - name: serviceAccount.roleArn
+          value: __ISSUE_API_ROLE_ARN__
+        - name: env.redisAddr
+          value: __REDIS_ENDPOINT__
+        - name: env.secretDbPasswordArn
+          value: __SECRET_DB_PASSWORD_ARN__
+        - name: ingress.wafAclArn
+          value: __WAF_ACL_ARN__
+        # kafkaBrokers is an in-cluster DNS name - static, so it lives in Git.
+        - name: env.kafkaBrokers
+          value: issuance-kafka-bootstrap.kafka.svc.cluster.local:9092
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true      # delete resources removed from Git
+      selfHeal: true   # revert manual kubectl drift back to Git state
+    syncOptions:
+      - CreateNamespace=true

@@ -28,6 +28,7 @@
 | [018](ADR-018-waf-v2-managed-rules.md) | WAF = AWS WAF v2 REGIONAL + Managed Rules + rate-based | Ch10 Phase F-1 | ✅ Accepted |
 | [019](ADR-019-bot-detection-heuristic.md) | 봇 탐지 = 휴리스틱 + 교체 가능 BotDetector 인터페이스 | Ch10 Phase F-2 | ✅ Accepted |
 | [020](ADR-020-waf-dynamic-block-ipset.md) | WAF 동적 차단 = aws_wafv2_ip_set + SDK 갱신 | Ch10 Phase F-2 | ✅ Accepted |
+| [021](ADR-021-cd-argocd-gitops.md) | CD = ArgoCD GitOps (수동 helm install 대체) | Ch10 Phase G | ✅ Accepted |
 
 ## 작성 원칙
 - **각 Phase 시작 시 그 Phase의 ADR을 먼저 작성** (코드 전).
