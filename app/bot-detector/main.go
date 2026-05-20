@@ -81,3 +81,5 @@ func atoiDefault(k string, fallback int) int {
 	}
 	return fallback
 }
+
+// Phase G: rebuild trigger - ECR re-created empty on cluster rebuild.

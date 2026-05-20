@@ -76,3 +76,5 @@ func mustenv(k string) string {
 	}
 	return v
 }
+
+// Phase G: rebuild trigger - ECR re-created empty on cluster rebuild.
