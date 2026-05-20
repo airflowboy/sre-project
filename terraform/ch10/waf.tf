@@ -13,7 +13,7 @@
 # via UpdateIPSet at runtime, so we ignore_changes on addresses.
 resource "aws_wafv2_ip_set" "bot_blocklist" {
   name               = "${var.cluster_name}-bot-blocklist"
-  description        = "IPs flagged by the bot-detector (Phase F-2)"
+  description        = "IPs flagged by the bot-detector - Phase F-2"
   scope              = "REGIONAL"
   ip_address_version = "IPV4"
   addresses          = []

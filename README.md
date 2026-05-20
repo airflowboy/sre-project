@@ -4,7 +4,7 @@
 > 직접 설계·구축하는 사이드 프로젝트 (작업 진행 중)
 
 [![Status](https://img.shields.io/badge/status-active%20development-brightgreen)]()
-[![Progress](https://img.shields.io/badge/Ch10%20capstone-Phase%20F--1%20complete-blue)]()
+[![Progress](https://img.shields.io/badge/Ch10%20capstone-Phase%20F%20complete-blue)]()
 [![Type](https://img.shields.io/badge/type-self--directed%20learning-orange)]()
 [![Domain](https://img.shields.io/badge/domain-DevOps%20%2F%20SRE-purple)]()
 
@@ -35,7 +35,7 @@ flowchart TD
 ### 핵심 도전 (현재 상태)
 - ✅ **동시성·정합성**: oversell 0건 (Redis Lua 원자 연산, Idempotency Key) — Phase C 단위 100 goroutine vs 재고 5에서 정확히 5 발급 / Phase D-2 클라우드 ALB 뒤에서 idempotent_replay 검증 / Phase E-1 비동기 영속화 후 RDS row 정확히 일치 + replay는 Kafka 메시지조차 안 만듦
 - 🟡 **트래픽 처리**: 평소 100 RPS → 피크 100만 RPS (가상 대기열, Backpressure, HPA) — Phase D-2 HPA scale up 2→4 + Phase E-2 가상 대기열 글로벌 rate cap 작동 검증 (분산 환경에서 leader 없이 Lua single-thread로 보장). 100만 RPS는 Phase J 부하 테스트
-- 🟡 **봇 차단**: 매크로/스크립트 자동 탐지 + WAF 실시간 피드백 — Phase F-1 AWS WAF v2 연결 + Managed Rules 작동 입증 (XSS 403, log4shell 403, 단 query SQLi 일부 통과 = F-2 봇 탐지 ML 정당화). F-2에서 행동 패턴 기반 ML 도입 예정
+- ✅ **봇 차단**: 매크로/스크립트 자동 탐지 + WAF 실시간 피드백 — Phase F-1 WAF v2(XSS·log4shell 403) + Phase F-2 휴리스틱 봇 탐지 닫힌 루프 실증 (40회 burst → bot-detector가 WAF IPSet에 IP 추가 → 그 IP 403). 봇 탐지는 BotDetector 인터페이스 뒤 — ML 교체는 실제 트래픽 데이터 확보 후 (Phase J)
 - ⏳ **SLO 운영**: p99 지연시간, 가용성, 재고 정합성 지표 정의·추적 — Phase H
 - ⏳ **Self-monitoring**: 우리 시스템의 이상 신호를 우리 ML이 학습·탐지 — Phase F·H
 
@@ -59,7 +59,7 @@ flowchart TD
 | 09 | **K8s 보안** | NetworkPolicy(default-deny+allow), PSS(restricted), **Trivy CI 게이트(실제 CVE 패치)**, RBAC SA | ✅ |
 | 10 | 🎯 **AWS 캡스톤** | 위 모든 도구의 실전 통합 — Go 백엔드 + 부하 테스트 + Post-mortem | 🚧 진행 중 |
 
-### Ch 10 캡스톤 Phase 진행 상황 (10 Phase 중 8 완료)
+### Ch 10 캡스톤 Phase 진행 상황 (10 Phase 중 9 완료)
 
 | Phase | 내용 | 산출물 | 상태 |
 |:--:|---|---|:--:|
@@ -71,7 +71,7 @@ flowchart TD
 | E-1 | Strimzi Kafka + 비동기 영속화 (issue-api producer + consumer → RDS) | k8s-manifests/ch10-kafka.yaml + `app/issuance-consumer/` + `helm/issuance-consumer/` + ADR-016 | ✅ |
 | E-2 | 가상 대기열 = Redis ZSET 시간순 + Lua 글로벌 rate cap | `app/issue-api/queue.go` + ADR-017 | ✅ |
 | F-1 | AWS WAF v2 + ALB 연결 (Managed Rules + rate-based) | `terraform/ch10/waf.tf` + Helm `ingress.wafAclArn` + ADR-018 | ✅ |
-| F-2 | 봇 탐지 ML + WAF 동적 IPSet 갱신 | Kafka stream + Isolation Forest + IPSet updater | ⏳ 다음 |
+| F-2 | 휴리스틱 봇 탐지 + WAF 동적 IPSet 갱신 (피드백 루프) | `app/bot-detector/` + `terraform/ch10/iam_bot_detector.tf` + ADR-019/020 | ✅ |
 | G | CI/CD 본격 (ArgoCD on EKS, Image Updater 확장) | Ch 07 패턴을 EKS에 이식 | ⏳ |
 | H | Observability + SLO 정의 | Prometheus + Grafana + SLO 알람 | ⏳ |
 | I | WAF + Secrets + NetworkPolicy 통합 보안 | Ch 09 패턴 EKS에 이식 | ⏳ |
